@@ -5,6 +5,7 @@
 /client/__pycache__
 /backend/venv
 /backend/__pycache__
+/backend/containers
 
 # misc
 .DS_Store
