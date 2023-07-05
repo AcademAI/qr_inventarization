@@ -24,11 +24,10 @@ def create_container():
         container_path = os.path.join(containers_folder, next_container_folder)
         os.makedirs(container_path)
         utils.generate_qr(container_path, next_container_folder)
-
+        utils.load_product_types(current_dir, container_path)
         return {"message": f"Создана новая папка контейнера № {next_container_folder}, QR код доступен по пути: {container_path}"}
     except Exception as e:
         return {"message": "Ошибка создания директории контейнера, проверьте структуру папок"}
-
 
 @app.get("/containers/{container_id}")
 def get_container(container_id: int):
@@ -45,37 +44,22 @@ def get_container(container_id: int):
 @app.post("/products/")
 def create_product(name: str, type: str, capacity: int, voltage: int, resistance: int):
     # при создании изделия оно должно добавляться к специальному файлу 'product_types.json' в папке containers
-    containers_list = []
-    containers_list.extend(os.listdir(containers_folder))
+    containers_list = utils.init_container_list(containers_folder)
 
     for container in containers_list:
         current_container = os.path.join(containers_folder, container)
         file_path = os.path.join(current_container, "products.json")
 
-        if os.path.exists(file_path):
-            data = utils.data_loader(file_path)
-            type_exists = utils.check_existing_type(name, data)
-            if type_exists == True:
-                return {"message": f"Тип уже существует"}
-            else:
-                last_id = data[-1]["id"]
-                new_id = last_id + 1
-        
-                new_type = {
-                        "id": new_id,
-                        "name": name,
-                        "type": type,
-                        "capacity": capacity,
-                        "voltage": voltage,
-                        "resistance": resistance,
-                        "quantity": 0
-                    }
-                data.append(new_type)
-                utils.data_dumper(file_path, data)
-        else:   
-            data = [ 
-                {
-                    "id": 1,
+        data = utils.data_loader(file_path)
+        type_exists = utils.check_existing_type(name, data)
+        if type_exists == True:
+            return {"message": f"Тип уже существует"}
+        else:
+            last_id = data[-1]["id"]
+            new_id = last_id + 1
+    
+            new_type = {
+                    "id": new_id,
                     "name": name,
                     "type": type,
                     "capacity": capacity,
@@ -83,58 +67,81 @@ def create_product(name: str, type: str, capacity: int, voltage: int, resistance
                     "resistance": resistance,
                     "quantity": 0
                 }
-            ]
+            data.append(new_type)
+            utils.append_product_types(current_dir, data)
             utils.data_dumper(file_path, data)
-        
+                
     return {"message": f"Добавлен новый тип изделия во все контейнеры"}
 
-@app.post("/products/{container_id}")
-def manage_products(container_id: int, name: str):
-    # функция принимает container_id и name, увеличивает и уменьшает количество изделий определенного типа
+@app.put("/products/{container_id}/{product_id}/increase")
+def increase_product_quantity(container_id: int, product_id: int):
     container_id = str(container_id)
-    product_path = os.path.join(containers_folder, container_id)
-    if not os.path.exists(product_path):
-        return {"message": f"Контейнера с номером {container_id} не существует, невозможно добавить изделие."}
+    current_container = os.path.join(containers_folder, container_id)
+    file_path = os.path.join(current_container, "products.json")
+    product_types_path = os.path.join(current_dir, "product_types.json")
     
-    file_path = os.path.join(product_path, "products.json")
-
-    if os.path.exists(file_path):
+    try:
         data = utils.data_loader(file_path)
-        last_id = data[-1]["id"]
-        new_id = last_id + 1
-
-        new_product = {
-                "id": new_id,
-                "name": name,
-                "type": type,
-                "capacity": capacity,
-                "voltage": voltage,
-                "resistance": resistance
-            }
-        data.append(new_product)
-    else:
-        data = [
-            {
-                "id": 1,
-                "name": name,
-                "type": type,
-                "capacity": capacity,
-                "voltage": voltage,
-                "resistance": resistance
-            }
-        ]
+        product_types = utils.data_loader(product_types_path)
+    except Exception as e:
+        return {"message": "Ошибка чтения контейнера или продукта, возможно он не существует"}
     
+    # Поиск продукта по id
+    for product_data, product_type in zip(data, product_types):
+        if product_data["id"] == product_id:
+            product_data["quantity"] += 1
+            product_type["quantity"] += 1
+            break
+
     utils.data_dumper(file_path, data)
+    utils.data_dumper(product_types_path, product_types)
     
-    return {"message": f"Добавлено изделие в контейнере № {container_id} по пути: {product_path}"}
+    return {"message": "Количество продукта увеличено"}
+    
+@app.put("/products/{container_id}/{product_id}/decrease")
+def decrease_product_quantity(container_id: int, product_id: int):
+    container_id = str(container_id)
+    current_container = os.path.join(containers_folder, container_id)
+    file_path = os.path.join(current_container, "products.json")
+    product_types_path = os.path.join(current_dir, "product_types.json")
+    
+    try:
+        data = utils.data_loader(file_path)
+        product_types = utils.data_loader(product_types_path)
+    except Exception as e:
+        return {"message": "Ошибка чтения контейнера или продукта, возможно он не существует"}
+    
+    # Поиск продукта по id
+    for product_data, product_type in zip(data, product_types):
+        if product_data["id"] == product_id:
+            product_data["quantity"] -= 1
+            product_type["quantity"] -= 1
+            break
 
-@app.get("/products/{container_id}")
-def find_product(container_id: int, name: str, type: str, capactiy: int, voltage: int, resistance: int):
+    utils.data_dumper(file_path, data)
+    utils.data_dumper(product_types_path, product_types)
+    
+    return {"message": "Количество продукта уменьшено"}
+
+@app.get("/products/{name}")
+def find_product(name: str):
     # искать изделие по всем контейнерам
-    pass
+    containers_list = utils.init_container_list(containers_folder)
+    product_inside = []
 
+    for container in containers_list:
+        current_container = os.path.join(containers_folder, container)
+        file_path = os.path.join(current_container, "products.json")
+
+        data = utils.data_loader(file_path)
+
+        for product in data:
+            if product["name"] == name and product["quantity"] > 0:
+                product_inside.append(container)
+
+    return product_inside
 
 if __name__ == "__main__":
-    utils.create_containers_folder(containers_folder)
-    utils.create_product_types(containers_folder)
+    utils.init_containers_folder(containers_folder)
+    utils.init_product_types(current_dir)
     uvicorn.run("main:app", host="0.0.0.0", port=8000, reload=True)
