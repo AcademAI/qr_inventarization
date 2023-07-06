@@ -17,7 +17,7 @@ app = FastAPI(
 """
 API routes
 """
-@app.post("/containers/")
+@app.post("/containers/create")
 def create_container():
     try:
         next_container_folder = str(len(os.listdir(containers_folder)) + 1)
@@ -41,7 +41,18 @@ def get_container(container_id: int):
     except Exception as e:
         return {"message": "Ошибка чтения контейнера, возможно в нем нет изделий или он не существует"}
     
-@app.post("/products/")
+@app.get("/containers/")
+def get_all_containers():
+    # получаем все контейнеры в формате словаря {container_id: путь}
+    containers_list = utils.init_container_list(containers_folder)
+    containers_dict = {}
+
+    for container in containers_list:
+        current_container_path = os.path.join(containers_folder, container)
+        containers_dict[container] = current_container_path
+    return containers_dict
+    
+@app.post("/products/create")
 def create_product(name: str, type: str, capacity: int, voltage: int, resistance: int):
     # при создании изделия оно должно добавляться к специальному файлу 'product_types.json' в папке containers
     containers_list = utils.init_container_list(containers_folder)

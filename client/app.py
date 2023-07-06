@@ -11,8 +11,6 @@ from kivy.uix.button import Button
 from kivy.uix.spinner import Spinner
 from kivy.uix.gridlayout import GridLayout
 
-
-
 class QRCodeScannerApp(App):
     def build(self):
         layout = BoxLayout(orientation='vertical')
