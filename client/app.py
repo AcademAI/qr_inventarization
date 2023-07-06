@@ -17,6 +17,8 @@ import controller
 
 
 class QRCodeScannerApp(MDApp):
+    global check_list
+    check_list = []
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
         self.selected_rows = []  # List to track selected rows
@@ -72,12 +74,20 @@ class QRCodeScannerApp(MDApp):
 
         self.is_processing_frame = False
 
+    def in_list(self,row):
+        global check_list
+        for i in check_list:
 
+            if i == row:
+                return True
+        return False
     def increase_selected_quantity(self, row_data):
+        global check_list
         for row in row_data:
-            checkbox = row[0]
-            print(checkbox)
-            if checkbox.active:
+            print(row)
+            print(check_list)
+            if row in check_list or self.in_list(row):
+                print(11)
                 quantity_label = row[-1]  # Assuming "Количество" column is the last item
                 quantity = int(quantity_label.text)
                 quantity += 1  # Increase the quantity by 1
@@ -91,7 +101,8 @@ class QRCodeScannerApp(MDApp):
 
         for product in product_data:
             checkbox = MDCheckbox(size_hint=(None, None), size=(dp(48), dp(48)))
-            row_data = [checkbox, product['name'], product['type'], product['quantity']]
+
+            row_data = ["12", product['name'], product['type'], product['quantity']]
             values.append(row_data)
 
         table_data = values
@@ -109,8 +120,10 @@ class QRCodeScannerApp(MDApp):
                 ("Количество", dp(30)),
             ],
             row_data=table_data,
-        )
 
+        )
+        #table_layout.bind(on_row_press=self.on_row_press)
+        table_layout.bind(on_check_press=self.on_check_press)
         close_button = Button(text='Закрыть', size_hint=(1, 0.2))
         close_button.bind(on_press=self.close_popup)
 
@@ -139,6 +152,21 @@ class QRCodeScannerApp(MDApp):
         table_layout.bind(on_row_select=on_row_select)  # Bind the event handler after creating the layout
 
         table_popup.open()
+
+    """def on_row_press(self, instance_table, instance_row):
+        '''Called when a table row is clicked.'''
+
+        print(instance_table, instance_row)"""
+
+    def on_check_press(self, instance_table, current_row):
+        global check_list
+        '''Called when the check box in the table row is checked.'''
+        for i in check_list:
+            if i==current_row:
+                check_list.remove(i)
+                return
+        check_list.append(current_row)
+        print(instance_table, current_row)
 
     def close_popup(self, instance):
         instance.parent.parent.parent.parent.dismiss()
