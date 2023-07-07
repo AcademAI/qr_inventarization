@@ -5,12 +5,12 @@ from kivy.uix.boxlayout import BoxLayout
 from kivy.uix.image import Image
 from kivy.graphics.texture import Texture
 from pyzbar import pyzbar
-from kivy.clock import Clock
 from kivy.uix.popup import Popup
 from kivy.uix.button import Button
 from kivy.uix.spinner import Spinner
 from kivy.uix.gridlayout import GridLayout
 from kivy.metrics import dp
+from kivy.clock import Clock
 
 import controller
 
@@ -18,9 +18,11 @@ import controller
 class QRCodeScannerApp(MDApp):
     global check_list
     check_list = []
-    def __init__(self, **kwargs):
-        super().__init__(**kwargs)
+
+    def init(self, **kwargs):
+        super().init(**kwargs)
         self.selected_rows = []  # List to track selected rows
+
     def build(self):
         layout = BoxLayout(orientation='vertical')
         self.image = Image()
@@ -35,19 +37,20 @@ class QRCodeScannerApp(MDApp):
         search_button = Button(text='Поиск', size_hint=(None, None), size=(100, 50))
         search_button.bind(on_press=self.open_search_window)
         scan_button = Button(text='Сканировать QR', size_hint=(None, None), size=(100, 50))
-        scan_button.bind(on_press=self.process_frame)
+        scan_button.bind(on_press=self.start_scanning)
         layout.add_widget(search_button)
         layout.add_widget(scan_button)
 
         return layout
 
-    def process_frame(self, dt):
-        # Возможно стоит изменить например на 1/60... Нужно настраивать под конкретный телефон.
-
-        if not self.is_processing_frame:
-            Clock.schedule_once(self.process_frame)
-
+    def start_scanning(self, *args):
+        if self.is_processing_frame:
+            return
         self.is_processing_frame = True
+        Clock.schedule_once(self.process_frame, 0)
+
+    def process_frame(self, dt):
+
         ret, frame = self.capture.read()
 
         if ret:
@@ -57,21 +60,23 @@ class QRCodeScannerApp(MDApp):
             decoded_objects = pyzbar.decode(gray)
             print(decoded_objects)
 
-            if len(decoded_objects) == 0:  # Если массивы пустые то выполняет отрисовку кадров
+            if len(decoded_objects) == 0:
+                # Если массивы пустые, то выполняет отрисовку кадров
                 buf = cv2.flip(frame, 0).tostring()
                 self.texture = Texture.create(size=(frame.shape[1], frame.shape[0]), colorfmt='bgr')
                 self.texture.blit_buffer(buf, colorfmt='bgr', bufferfmt='ubyte')
                 self.image.texture = self.texture
             else:
+                # Иначе, если не пустой пойманный массив, декодирует
                 last_decoded_object = decoded_objects[0]
-                # иначе не пустой пойманный массив декодирует
                 text = last_decoded_object.data.decode('utf-8')
 
                 container_id = text[-1]
+                self.is_processing_frame = False
                 self.show_table_popup(container_id)
-                return
 
-        self.is_processing_frame = False
+        if self.is_processing_frame:
+            Clock.schedule_once(self.process_frame, 0)
 
     def in_list(self,row):
         global check_list
