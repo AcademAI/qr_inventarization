@@ -77,21 +77,28 @@ class QRCodeScannerApp(MDApp):
     def in_list(self,row):
         global check_list
         for i in check_list:
-
-            if i == row:
+            # проверяем на совпадение по названию
+            if i[0] == row[0]:
                 return True
         return False
-    def increase_selected_quantity(self, row_data):
+    def get_prod_id(self,name,product_data):
+        for product in product_data:
+            if name == product['name']:
+                return product['id']
+    def increase_selected_quantity(self, row_data,container_id,product_data):
         global check_list
+
         for row in row_data:
             print(row)
             print(check_list)
-            if row in check_list or self.in_list(row):
+            if self.in_list(row):
                 print(11)
-                quantity_label = row[-1]  # Assuming "Количество" column is the last item
-                quantity = int(quantity_label.text)
-                quantity += 1  # Increase the quantity by 1
-                quantity_label.text = str(quantity)
+                id_prod = self.get_prod_id(row[0],product_data)
+                controller.increase_product_quantity(container_id = container_id, product_id = id_prod)
+                row[-1] += 1  # Increase the quantity by 1
+                self.table_layout.row_data=row_data
+
+
 
     def show_table_popup(self, text):
         container_id = text
@@ -100,21 +107,17 @@ class QRCodeScannerApp(MDApp):
         values = []
 
         for product in product_data:
-            checkbox = MDCheckbox(size_hint=(None, None), size=(dp(48), dp(48)))
-
-            row_data = ["12", product['name'], product['type'], product['quantity']]
+            row_data = [product['name'], product['type'], product['quantity']]
             values.append(row_data)
 
         table_data = values
-
-        table_layout = MDDataTable(
+        self.table_layout = MDDataTable(
             pos_hint={'center_x': 0.5, 'center_y': 0.5},
             size_hint=(0.8, 0.8),
             use_pagination=True,
             rows_num=3,
             check=True,  # Enable row selection with checkboxes
             column_data=[
-                ("", dp(48)),  # Checkbox column
                 ("Название", dp(30)),
                 ("Тип", dp(30)),
                 ("Количество", dp(30)),
@@ -123,19 +126,19 @@ class QRCodeScannerApp(MDApp):
 
         )
         #table_layout.bind(on_row_press=self.on_row_press)
-        table_layout.bind(on_check_press=self.on_check_press)
+        self.table_layout.bind(on_check_press=self.on_check_press)
         close_button = Button(text='Закрыть', size_hint=(1, 0.2))
         close_button.bind(on_press=self.close_popup)
 
         increase_button = Button(text='Увеличить', size_hint=(1, 0.2))
-        increase_button.bind(on_press=lambda instance: self.increase_selected_quantity(table_data))
+        increase_button.bind(on_press=lambda instance: self.increase_selected_quantity(table_data,container_id,product_data))
 
         button_layout = GridLayout(cols=2, size_hint=(1, None), height=dp(48))
         button_layout.add_widget(close_button)
         button_layout.add_widget(increase_button)
 
         layout = BoxLayout(orientation='vertical')
-        layout.add_widget(table_layout)
+        layout.add_widget(self.table_layout)
         layout.add_widget(button_layout)
 
         table_popup = Popup(title=f"Содержимое контейнера № {container_id}", content=layout, size_hint=(0.8, 0.8))
@@ -149,7 +152,7 @@ class QRCodeScannerApp(MDApp):
             else:
                 self.selected_rows.remove(r)
 
-        table_layout.bind(on_row_select=on_row_select)  # Bind the event handler after creating the layout
+        self.table_layout.bind(on_row_select=on_row_select)  # Bind the event handler after creating the layout
 
         table_popup.open()
 
@@ -166,7 +169,7 @@ class QRCodeScannerApp(MDApp):
                 check_list.remove(i)
                 return
         check_list.append(current_row)
-        print(instance_table, current_row)
+        #print(instance_table, current_row)
 
     def close_popup(self, instance):
         instance.parent.parent.parent.parent.parent.dismiss()
