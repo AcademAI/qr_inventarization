@@ -178,23 +178,24 @@ class QRCodeScannerApp(MDApp):
     '''
 
     def open_search_window(self, instance):
-        search_layout = BoxLayout(orientation='vertical')
-        containers_tuple = controller.get_all_containers()
+        if not (self.is_processing_frame):
+            search_layout = BoxLayout(orientation='vertical')
+            containers_tuple = controller.get_all_containers()
 
-        # Извлечение значений id из containers_tuple
-        ids = [item[0] for item in containers_tuple]
+            # Извлечение значений id из containers_tuple
+            ids = [item[0] for item in containers_tuple]
 
-        spinner = Spinner(
-            text='Select an item',
-            values=ids,
-            size_hint=(None, None),
-            size=(200, 50)
-        )
-        spinner.bind(text=self.on_spinner_select)
-        search_layout.add_widget(spinner)
+            spinner = Spinner(
+                text='Select an item',
+                values=ids,
+                size_hint=(None, None),
+                size=(200, 50)
+            )
+            spinner.bind(text=self.on_spinner_select)
+            search_layout.add_widget(spinner)
 
-        search_popup = Popup(title='Search', content=search_layout, size_hint=(0.6, 0.4))
-        search_popup.open()
+            search_popup = Popup(title='Search', content=search_layout, size_hint=(0.6, 0.4))
+            search_popup.open()
 
     def on_spinner_select(self, instance, text):
         self.show_table_popup(text)
