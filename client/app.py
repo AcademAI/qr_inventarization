@@ -11,7 +11,6 @@ from kivy.uix.button import Button
 from kivy.uix.spinner import Spinner
 from kivy.uix.gridlayout import GridLayout
 from kivy.metrics import dp
-from kivymd.uix.selectioncontrol import MDCheckbox
 
 import controller
 
@@ -89,18 +88,22 @@ class QRCodeScannerApp(MDApp):
         global check_list
 
         for row in row_data:
-            print(row)
-            print(check_list)
             if self.in_list(row):
-                print(11)
+                temp = []
+                for i in row:
+                    temp.append(i)
+
                 id_prod = self.get_prod_id(row[0],product_data)
+                print(container_id,id_prod)
                 controller.increase_product_quantity(container_id = container_id, product_id = id_prod)
                 row[-1] += 1  # Increase the quantity by 1
-                self.table_layout.row_data=row_data
+                self.table_layout.update_row(self.table_layout.row_data[id_prod-1],row)
 
 
 
     def show_table_popup(self, text):
+        global check_list
+        check_list = []
         container_id = text
         product_data = controller.get_container(container_id)
 
@@ -125,7 +128,6 @@ class QRCodeScannerApp(MDApp):
             row_data=table_data,
 
         )
-        #table_layout.bind(on_row_press=self.on_row_press)
         self.table_layout.bind(on_check_press=self.on_check_press)
         close_button = Button(text='Закрыть', size_hint=(1, 0.2))
         close_button.bind(on_press=self.close_popup)
@@ -144,22 +146,11 @@ class QRCodeScannerApp(MDApp):
         table_popup = Popup(title=f"Содержимое контейнера № {container_id}", content=layout, size_hint=(0.8, 0.8))
         table_popup.bind(on_press=self.close_popup)
 
-        self.selected_rows = []  # Clear the selected rows list
 
-        def on_row_select(instance, r):
-            if r.active:
-                self.selected_rows.append(r)
-            else:
-                self.selected_rows.remove(r)
-
-        self.table_layout.bind(on_row_select=on_row_select)  # Bind the event handler after creating the layout
 
         table_popup.open()
 
-    """def on_row_press(self, instance_table, instance_row):
-        '''Called when a table row is clicked.'''
 
-        print(instance_table, instance_row)"""
 
     def on_check_press(self, instance_table, current_row):
         global check_list
@@ -169,9 +160,10 @@ class QRCodeScannerApp(MDApp):
                 check_list.remove(i)
                 return
         check_list.append(current_row)
-        #print(instance_table, current_row)
 
     def close_popup(self, instance):
+        global check_list
+        check_list = []
         instance.parent.parent.parent.parent.parent.dismiss()
 
     '''
