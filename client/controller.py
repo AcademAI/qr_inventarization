@@ -20,8 +20,8 @@ def get_container(container_id):
     return data
 
 def increase_product_quantity(container_id: int, product_id: int):
-    url = f"http://127.0.0.1:8000//products/{container_id}/{product_id}/increase"
-    response = requests.get(url)
+    url = f"http://127.0.0.1:8000/products/{container_id}/{product_id}/increase"
+    response = requests.put(url)
     data = response.json()
 
     return data
