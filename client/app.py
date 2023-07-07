@@ -169,7 +169,7 @@ class QRCodeScannerApp(MDApp):
         print(instance_table, current_row)
 
     def close_popup(self, instance):
-        instance.parent.parent.parent.parent.dismiss()
+        instance.parent.parent.parent.parent.parent.dismiss()
 
     '''
     def on_popup_dismiss(self, instance):
