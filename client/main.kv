@@ -1,0 +1,60 @@
+MDBoxLayout:
+    orientation: "vertical"
+    pos_hint: {'center_x': 0.5, 'center_y': 0.5}
+
+    MDTopAppBar:
+        title: "Приложение учета изделий"
+        md_bg_color: .2,.2,.2,1
+        
+
+    MDBottomNavigation:
+
+        MDBottomNavigationItem:
+            name: "screen 1"
+            text: "Контейнеры"
+            icon: "folder"
+
+            MDScrollView:
+
+                MDList:
+                    id: container
+            
+            GridLayout:
+                cols: 2
+                size_hint_y: None
+                height: self.minimum_height
+                spacing: dp(10)
+
+                Button:
+                    text: 'Поиск'
+                    size_hint: None, None
+                    size: 200, 50
+                    pos_hint: {'center_x': 0.5}
+                    on_press: app.open_search_window()
+
+                Button:
+                    text: 'Добавить контейнер'
+                    size_hint: None, None
+                    size: 200, 50
+                    pos_hint: {'center_x': 0}
+                    on_press: app.open_search_window()
+
+        MDBottomNavigationItem:
+            name: "screen 2"
+            text: "Сканировать QR код"
+            icon: "qrcode"
+
+            Image:
+                id: image
+
+            Button:
+                text: 'Сканировать QR'
+                size_hint: None, None
+                size: 200, 50
+                pos_hint: {'center_x': 0.5}
+                on_press: app.start_scanning()
+
+        MDBottomNavigationItem:
+            name: "screen 3"
+            text: "Создать изделие"
+            icon: "plus"

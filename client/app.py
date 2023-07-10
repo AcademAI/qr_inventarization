@@ -2,15 +2,17 @@ import cv2
 from kivymd.app import MDApp
 from kivymd.uix.datatables import MDDataTable
 from kivy.uix.boxlayout import BoxLayout
+from kivy.uix.gridlayout import GridLayout
 from kivy.uix.image import Image
 from kivy.graphics.texture import Texture
 from pyzbar import pyzbar
 from kivy.uix.popup import Popup
+from kivy.lang import Builder
 from kivy.uix.button import Button
 from kivy.uix.spinner import Spinner
-from kivy.uix.gridlayout import GridLayout
 from kivy.metrics import dp
 from kivy.clock import Clock
+from kivymd.uix.list import OneLineListItem
 
 import controller
 
@@ -24,9 +26,10 @@ class QRCodeScannerApp(MDApp):
         self.selected_rows = []  # List to track selected rows
 
     def build(self):
-        layout = BoxLayout(orientation='vertical')
-        self.image = Image()
-        layout.add_widget(self.image)
+        self.theme_cls.theme_style = "Dark"
+        self.theme_cls.primary_palette = "BlueGray"
+        layout = Builder.load_file('main.kv')
+        self.image = layout.ids.image
         self.capture = cv2.VideoCapture(0)
         self.capture.set(cv2.CAP_PROP_FRAME_WIDTH, 1280)
         self.capture.set(cv2.CAP_PROP_FRAME_HEIGHT, 720)
@@ -34,12 +37,6 @@ class QRCodeScannerApp(MDApp):
         self.texture = None
         self.is_processing_frame = False
 
-        search_button = Button(text='Поиск', size_hint=(None, None), size=(100, 50))
-        search_button.bind(on_press=self.open_search_window)
-        scan_button = Button(text='Сканировать QR', size_hint=(None, None), size=(100, 50))
-        scan_button.bind(on_press=self.start_scanning)
-        layout.add_widget(search_button)
-        layout.add_widget(scan_button)
 
         return layout
 
@@ -105,7 +102,6 @@ class QRCodeScannerApp(MDApp):
                 self.table_layout.update_row(self.table_layout.row_data[id_prod-1],row)
 
 
-
     def show_table_popup(self, text):
         global check_list
         check_list = []
@@ -151,10 +147,7 @@ class QRCodeScannerApp(MDApp):
         table_popup = Popup(title=f"Содержимое контейнера № {container_id}", content=layout, size_hint=(0.8, 0.8))
         table_popup.bind(on_press=self.close_popup)
 
-
-
         table_popup.open()
-
 
 
     def on_check_press(self, instance_table, current_row):
@@ -177,7 +170,7 @@ class QRCodeScannerApp(MDApp):
 
     '''
 
-    def open_search_window(self, instance):
+    def open_search_window(self):
         if not (self.is_processing_frame):
             search_layout = BoxLayout(orientation='vertical')
             containers_tuple = controller.get_all_containers()
@@ -186,7 +179,7 @@ class QRCodeScannerApp(MDApp):
             ids = [item[0] for item in containers_tuple]
 
             spinner = Spinner(
-                text='Select an item',
+                text='Выберите контейнер из списка',
                 values=ids,
                 size_hint=(None, None),
                 size=(200, 50)
@@ -194,8 +187,15 @@ class QRCodeScannerApp(MDApp):
             spinner.bind(text=self.on_spinner_select)
             search_layout.add_widget(spinner)
 
-            search_popup = Popup(title='Search', content=search_layout, size_hint=(0.6, 0.4))
+            search_popup = Popup(title='Поиск', content=search_layout, size_hint=(0.6, 0.4))
             search_popup.open()
+
+    def on_start(self):
+        # заготовка для списка контейнеров на скрине Containers, функция open_search_window в текщуем виде будет ненужна
+        for i in range(20):
+            self.root.ids.container.add_widget(
+                OneLineListItem(text=f"Single-line item {i}")
+            )
 
     def on_spinner_select(self, instance, text):
         self.show_table_popup(text)
