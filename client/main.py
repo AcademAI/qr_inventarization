@@ -56,6 +56,7 @@ class QRCodeScannerApp(MDApp):
         self.is_processing_frame = False
     
         self.containerlist_builder(layout)
+        self.products = {}
 
         return layout
 
@@ -64,15 +65,15 @@ class QRCodeScannerApp(MDApp):
         '''Сука почини эту хуйню Артур блять'''
 
         containers_tuple = controller.get_all_containers()
-        ids = [item[0] for item in containers_tuple]
-
-        container_items = []
 
         for container_id, container_data in containers_tuple:
+
+            layout.ids['containerlist'].add_widget(
+                ContainerListItem(text=f"Контейнер № {container_id}")
+            )
             container_path = container_data['path']
             products = container_data['products']
-            print(products)
-            
+            '''
             for product in products:
                 layout.ids['containerlist'].add_widget(
                     ContainerListItem(
@@ -85,9 +86,9 @@ class QRCodeScannerApp(MDApp):
                         product_voltage=product['voltage'],
                         product_resistance=product['resistance'],
                         product_quantity=product['quantity'],
-                        text=f"Item {container_id}"
                     )
                 )
+            '''
 
     def start_scanning(self, *args):
         if self.is_processing_frame:
