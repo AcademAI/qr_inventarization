@@ -1,20 +1,38 @@
 import cv2
 from kivymd.app import MDApp
+from kivy.core.window import Window
 from kivymd.uix.datatables import MDDataTable
+from kivymd.uix.list import IRightBodyTouch, TwoLineAvatarIconListItem
+from kivymd.uix.boxlayout import MDBoxLayout
 from kivy.uix.boxlayout import BoxLayout
 from kivy.uix.gridlayout import GridLayout
 from kivy.uix.image import Image
-from kivy.graphics.texture import Texture
-from pyzbar import pyzbar
-from kivy.uix.popup import Popup
-from kivy.lang import Builder
 from kivy.uix.button import Button
 from kivy.uix.spinner import Spinner
+from kivy.uix.popup import Popup
+from kivy.graphics.texture import Texture
+from kivy.properties import BooleanProperty, DictProperty, ListProperty, NumericProperty, ObjectProperty, OptionProperty, StringProperty
+from kivy.lang import Builder
+
 from kivy.metrics import dp
 from kivy.clock import Clock
-from kivymd.uix.list import OneLineListItem
-
+from pyzbar import pyzbar
 import controller
+
+class ContainerListItem(TwoLineAvatarIconListItem):
+    adaptive_width = True
+    icon = StringProperty("folder")
+
+    product = ObjectProperty()
+    container_id = NumericProperty()
+    container_path = StringProperty() 
+    product_name = StringProperty()
+    product_type = StringProperty()
+    product_capacity = NumericProperty()
+    product_voltage = NumericProperty()
+    product_resistance = NumericProperty()
+    product_quantity = NumericProperty()
+    
 
 
 class QRCodeScannerApp(MDApp):
@@ -28,7 +46,7 @@ class QRCodeScannerApp(MDApp):
     def build(self):
         self.theme_cls.theme_style = "Dark"
         self.theme_cls.primary_palette = "BlueGray"
-        layout = Builder.load_file('main.kv')
+        layout = Builder.load_file('kvs/main.kv')
         self.image = layout.ids.image
         self.capture = cv2.VideoCapture(0)
         self.capture.set(cv2.CAP_PROP_FRAME_WIDTH, 1280)
@@ -36,9 +54,40 @@ class QRCodeScannerApp(MDApp):
         self.capture.set(cv2.CAP_PROP_BUFFERSIZE, 1)
         self.texture = None
         self.is_processing_frame = False
-
+    
+        self.containerlist_builder(layout)
 
         return layout
+
+
+    def containerlist_builder(self, layout):
+        '''Сука почини эту хуйню Артур блять'''
+
+        containers_tuple = controller.get_all_containers()
+        ids = [item[0] for item in containers_tuple]
+
+        container_items = []
+
+        for container_id, container_data in containers_tuple:
+            container_path = container_data['path']
+            products = container_data['products']
+            print(products)
+            
+            for product in products:
+                layout.ids['containerlist'].add_widget(
+                    ContainerListItem(
+                        product=product,
+                        container_id=container_id,
+                        container_path=container_path,
+                        product_name=product['name'],
+                        product_type=product['type'],
+                        product_capacity=product['capacity'],
+                        product_voltage=product['voltage'],
+                        product_resistance=product['resistance'],
+                        product_quantity=product['quantity'],
+                        text=f"Item {container_id}"
+                    )
+                )
 
     def start_scanning(self, *args):
         if self.is_processing_frame:
@@ -190,17 +239,9 @@ class QRCodeScannerApp(MDApp):
             search_popup = Popup(title='Поиск', content=search_layout, size_hint=(0.6, 0.4))
             search_popup.open()
 
-    def on_start(self):
-        # заготовка для списка контейнеров на скрине Containers, функция open_search_window в текщуем виде будет ненужна
-        for i in range(20):
-            self.root.ids.container.add_widget(
-                OneLineListItem(text=f"Single-line item {i}")
-            )
 
     def on_spinner_select(self, instance, text):
         self.show_table_popup(text)
-
-
 
     def change_quantity(self, label, change):
         quantity = int(label.text)
@@ -209,6 +250,7 @@ class QRCodeScannerApp(MDApp):
 
     def on_stop(self):
         self.capture.release()
+        
 
 
 if __name__ == '__main__':

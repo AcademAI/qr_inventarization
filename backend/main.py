@@ -1,4 +1,5 @@
 from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
 import uvicorn
 import json
 import os
@@ -12,6 +13,20 @@ APP instance
 """
 app = FastAPI(
     title="Система инвентаризации"
+)
+
+origins = [
+    "http://localhost",
+    "http://localhost:3000",
+    "http://localhost:8000",
+    # Добавьте дополнительные разрешенные источники (origins) в список
+]
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
 )
 
 """
@@ -49,7 +64,20 @@ def get_all_containers():
 
     for container in containers_list:
         current_container_path = os.path.join(containers_folder, container)
-        containers_dict[container] = current_container_path
+        container_data = {
+            "path": current_container_path,
+            "products": []
+        }
+
+        # получаем путь к файлу products.json
+        file_path = os.path.join(current_container_path, "products.json")
+        # загружаем данные из файла products.json
+        products_data = utils.data_loader(file_path)
+        # добавляем данные в список products контейнера
+        container_data["products"] = products_data
+
+        containers_dict[container] = container_data
+
     return containers_dict
     
 @app.post("/products/create")
