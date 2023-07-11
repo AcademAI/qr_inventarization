@@ -40,19 +40,46 @@ MDBoxLayout:
                     on_press: app.open_search_window()
 
         MDBottomNavigationItem:
+
             name: "screen 2"
             text: "Сканировать QR код"
             icon: "qrcode"
 
-            Image:
-                id: image
+            GridLayout:
+                rows: 2
 
-            Button:
-                text: 'Сканировать QR'
-                size_hint: None, None
-                size: 200, 50
-                pos_hint: {'center_x': 0.5}
-                on_press: app.start_scanning()
+
+                Image:
+                    size_hint: 1, 0.2
+                    id: image
+
+                Button:
+                    size_hint: 1, 0.2
+                    text: 'Сканировать QR'
+                    size_hint: None, None
+                    size: 200, 50
+                    pos_hint: {'center_x': 0.5}
+                    on_press: app.start_scanning()
+
+                RelativeLayout:
+                    size_hint: 1, 0.9
+                    AndroidCamera:
+                        index: 0
+                        id: a_cam
+                        resolution: self.camera_resolution
+                        allow_stretch: True
+                        play: False
+                        canvas.before:
+                            PushMatrix
+                            Rotate:
+                                angle: -90
+                                origin: self.center
+                            Scale:
+                                x: self.cam_ratio
+                                y: self.cam_ratio
+                                origin: self.center
+                        canvas.after:
+                            PopMatrix
 
         MDBottomNavigationItem:
             name: "screen 3"
