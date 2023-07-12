@@ -11,10 +11,8 @@ from kivy.uix.button import Button
 from kivy.uix.spinner import Spinner
 from kivy.uix.popup import Popup
 from kivy.graphics.texture import Texture
-from kivy.properties import BooleanProperty, DictProperty, ListProperty, NumericProperty, ObjectProperty, \
-    OptionProperty, StringProperty
+from kivy.properties import  StringProperty
 from kivy.lang import Builder
-from functools import partial
 from kivy.metrics import dp
 from kivy.clock import Clock
 from kivy.uix.camera import Camera
@@ -27,15 +25,7 @@ class ContainerListItem(TwoLineAvatarIconListItem):
     adaptive_width = True
     icon = StringProperty("folder")
 
-    product = ObjectProperty()
-    container_id = NumericProperty()
-    container_path = StringProperty()
-    product_name = StringProperty()
-    product_type = StringProperty()
-    product_capacity = NumericProperty()
-    product_voltage = NumericProperty()
-    product_resistance = NumericProperty()
-    product_quantity = NumericProperty()
+
 
 
 class AndroidCamera(Camera):
@@ -55,8 +45,6 @@ class QRCodeScannerApp(MDApp):
         self.theme_cls.theme_style = "Dark"
         self.theme_cls.primary_palette = "BlueGray"
         layout = Builder.load_file('kvs/main.kv')
-        self.image = layout.ids.image
-        self.image = layout.ids.image
         self.cam = layout.ids.a_cam
         self.texture = None
         self.is_processing_frame = False
@@ -67,7 +55,7 @@ class QRCodeScannerApp(MDApp):
         return layout
 
     def containerlist_builder(self, layout):
-        '''Сука почини эту хуйню Артур блять'''
+        '''Вроде починили:)'''
         containers_tuple = controller.get_all_containers()
         for container_id, container_data in containers_tuple:
             container = ContainerListItem(text=f"Container {container_id}")
@@ -76,23 +64,6 @@ class QRCodeScannerApp(MDApp):
 
             layout.ids['containerlist'].add_widget(container)
 
-
-            '''
-            for product in products:
-                layout.ids['containerlist'].add_widget(
-                    ContainerListItem(
-                        product=product,
-                        container_id=container_id,
-                        container_path=container_path,
-                        product_name=product['name'],
-                        product_type=product['type'],
-                        product_capacity=product['capacity'],
-                        product_voltage=product['voltage'],
-                        product_resistance=product['resistance'],
-                        product_quantity=product['quantity'],
-                    )
-                )
-            '''
 
     def start_scanning(self, *args):
         if self.is_processing_frame:
@@ -123,12 +94,7 @@ class QRCodeScannerApp(MDApp):
             print(decoded_objects)
 
             if len(decoded_objects) == 0:
-                # Если массивы пустые, то выполняет отрисовку кадров
-                buf = cv2.flip(frame, 0).tostring()
-                self.texture = Texture.create(size=(frame.shape[1], frame.shape[0]), colorfmt='bgr')
-                self.texture.blit_buffer(buf, colorfmt='bgr', bufferfmt='ubyte')
-                self.image.texture = self.texture
-                self.root.ids.image.texture = self.texture
+                pass
             else:
                 # Иначе, если не пустой пойманный массив, декодирует
                 last_decoded_object = decoded_objects[0]
@@ -273,3 +239,8 @@ class QRCodeScannerApp(MDApp):
 
 if __name__ == '__main__':
     QRCodeScannerApp().run()
+
+
+
+
+
