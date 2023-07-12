@@ -49,6 +49,9 @@ class QRCodeScannerApp(MDApp):
         self.texture = None
         self.is_processing_frame = False
 
+        screen = layout.ids.screen_with_camera
+        screen.bind(on_pre_leave=self.on_screen_leave)
+
         self.containerlist_builder(layout)
         self.products = {}
 
@@ -58,7 +61,7 @@ class QRCodeScannerApp(MDApp):
         '''Вроде починили:)'''
         containers_tuple = controller.get_all_containers()
         for container_id, container_data in containers_tuple:
-            container = ContainerListItem(text=f"Container {container_id}")
+            container = ContainerListItem(text=f"Контейнер № {container_id}", icon="folder")
 
             container.bind(on_release=lambda *args, id=container_id: self.show_table_popup(id))
 
@@ -235,12 +238,10 @@ class QRCodeScannerApp(MDApp):
 
     def on_stop(self):
         self.cam.play = False
+        self.is_processing_frame = False
 
+    def on_screen_leave(self, *args):
+        self.on_stop()
 
 if __name__ == '__main__':
     QRCodeScannerApp().run()
-
-
-
-
-
