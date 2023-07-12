@@ -100,6 +100,9 @@ def load_product_types(current_dir, container_path):
     file_path = os.path.join(container_path, "products.json")
 
     data = data_loader(product_types_path)
+    for product in data:
+        product["quantity"] = 0
+        
     data_dumper(file_path, data)
     
 def check_existing_type(name: str, data) -> bool:
