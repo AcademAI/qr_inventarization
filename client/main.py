@@ -2,8 +2,9 @@ import cv2
 from kivymd.app import MDApp
 from kivy.core.window import Window
 from kivymd.uix.datatables import MDDataTable
-from kivymd.uix.list import IRightBodyTouch, TwoLineAvatarIconListItem
+from kivymd.uix.list import IRightBodyTouch, OneLineAvatarIconListItem, IconLeftWidget
 from kivymd.uix.boxlayout import MDBoxLayout
+from kivymd.uix.button import MDIconButton
 from kivy.uix.boxlayout import BoxLayout
 from kivy.uix.gridlayout import GridLayout
 from kivy.uix.image import Image
@@ -20,13 +21,10 @@ from pyzbar import pyzbar
 import numpy as np
 import controller
 
-
-class ContainerListItem(TwoLineAvatarIconListItem):
+'''
+class ContainerListItem(IRightBodyTouch, MDBoxLayout):
     adaptive_width = True
-    icon = StringProperty("folder")
-
-
-
+'''
 
 class AndroidCamera(Camera):
     camera_resolution = (1280, 720)
@@ -60,12 +58,18 @@ class QRCodeScannerApp(MDApp):
     def containerlist_builder(self, layout):
         '''Вроде починили:)'''
         containers_tuple = controller.get_all_containers()
+
         for container_id, container_data in containers_tuple:
-            container = ContainerListItem(text=f"Контейнер № {container_id}", icon="folder")
+            containerItem = OneLineAvatarIconListItem(
+                IconLeftWidget(
+                    icon="folder"
+                ),
+                text=f"Контейнер № {container_id}", 
+            )
 
-            container.bind(on_release=lambda *args, id=container_id: self.show_table_popup(id))
+            containerItem.bind(on_release=lambda *args, id=container_id: self.show_table_popup(id))
 
-            layout.ids['containerlist'].add_widget(container)
+            layout.ids['containerlist'].add_widget(containerItem)
 
 
     def start_scanning(self, *args):
