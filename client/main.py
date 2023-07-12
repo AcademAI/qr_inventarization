@@ -69,7 +69,7 @@ class QRCodeScannerApp(MDApp):
         for container_id, container_data in containers_tuple:
 
             layout.ids['containerlist'].add_widget(
-                ContainerListItem(text=f"Контейнер № {container_id}")
+                ContainerListItem(text=f"Контейнер № {container_id}", icon="folder")
             )
             container_path = container_data['path']
             products = container_data['products']
