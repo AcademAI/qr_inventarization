@@ -1,7 +1,7 @@
 [app]
 
 # (str) Title of your application
-title = My Application
+title = QR Application
 
 # (str) Package name
 package.name = myapp
@@ -44,10 +44,10 @@ requirements = python3,sdl2_ttf, pil,kivy,kivymd,opencv,pyzbar,android, numpy
 # requirements.source.kivy = ../../kivy
 
 # (str) Presplash of the application
-#presplash.filename = %(source.dir)s/data/presplash.png
+presplash.filename = pacman.gif
 
 # (str) Icon of the application
-#icon.filename = %(source.dir)s/data/icon.png
+icon.filename = icons8-qr-48.png
 
 # (list) Supported orientations
 # Valid options are: landscape, portrait, portrait-reverse or landscape-reverse
