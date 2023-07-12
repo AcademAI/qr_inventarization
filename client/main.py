@@ -90,11 +90,6 @@ class QRCodeScannerApp(MDApp):
             # Распознавание QR-кодов
             decoded_objects = pyzbar.decode(gray)
             print(decoded_objects)
-            # Преобразование кадра в оттенки серого
-            gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
-            # Распознавание QR-кодов
-            decoded_objects = pyzbar.decode(gray)
-            print(decoded_objects)
 
             if len(decoded_objects) == 0:
                 pass
