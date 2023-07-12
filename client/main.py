@@ -16,7 +16,9 @@ from kivy.lang import Builder
 
 from kivy.metrics import dp
 from kivy.clock import Clock
+from kivy.uix.camera import Camera
 from pyzbar import pyzbar
+import numpy as np
 import controller
 
 class ContainerListItem(TwoLineAvatarIconListItem):
@@ -32,8 +34,10 @@ class ContainerListItem(TwoLineAvatarIconListItem):
     product_voltage = NumericProperty()
     product_resistance = NumericProperty()
     product_quantity = NumericProperty()
-    
 
+class AndroidCamera(Camera):
+    camera_resolution = (1280, 720)
+    cam_ratio = camera_resolution[0] / camera_resolution[1]
 
 class QRCodeScannerApp(MDApp):
     global check_list
@@ -48,10 +52,8 @@ class QRCodeScannerApp(MDApp):
         self.theme_cls.primary_palette = "BlueGray"
         layout = Builder.load_file('kvs/main.kv')
         self.image = layout.ids.image
-        self.capture = cv2.VideoCapture(0)
-        self.capture.set(cv2.CAP_PROP_FRAME_WIDTH, 1280)
-        self.capture.set(cv2.CAP_PROP_FRAME_HEIGHT, 720)
-        self.capture.set(cv2.CAP_PROP_BUFFERSIZE, 1)
+        self.image = layout.ids.image
+        self.cam = layout.ids.a_cam
         self.texture = None
         self.is_processing_frame = False
     
@@ -94,13 +96,24 @@ class QRCodeScannerApp(MDApp):
         if self.is_processing_frame:
             return
         self.is_processing_frame = True
-        Clock.schedule_once(self.process_frame, 0)
+        self.cam.play = True
+        Clock.schedule_once(self.process_frame, 0.5)
 
     def process_frame(self, dt):
+        image_object = None
+        if not self.cam.play:
+            self.cam.play = True
+        image_object = self.cam.export_as_image()
+        if image_object:
+            image_object = self.cam.export_as_image()
+            w, h = image_object._texture.size
+            frame = np.frombuffer(image_object._texture.pixels, 'uint8').reshape(h, w, 4)
+            # Преобразование кадра в оттенки серого
+            gray = cv2.cvtColor(frame, cv2.COLOR_RGBA2GRAY)
 
-        ret, frame = self.capture.read()
-
-        if ret:
+            # Распознавание QR-кодов
+            decoded_objects = pyzbar.decode(gray)
+            print(decoded_objects)
             # Преобразование кадра в оттенки серого
             gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
             # Распознавание QR-кодов
@@ -113,6 +126,7 @@ class QRCodeScannerApp(MDApp):
                 self.texture = Texture.create(size=(frame.shape[1], frame.shape[0]), colorfmt='bgr')
                 self.texture.blit_buffer(buf, colorfmt='bgr', bufferfmt='ubyte')
                 self.image.texture = self.texture
+                self.root.ids.image.texture = self.texture
             else:
                 # Иначе, если не пустой пойманный массив, декодирует
                 last_decoded_object = decoded_objects[0]
@@ -198,6 +212,8 @@ class QRCodeScannerApp(MDApp):
         table_popup.bind(on_press=self.close_popup)
 
         table_popup.open()
+        self.cam.play = False
+        self.is_processing_frame = False
 
 
     def on_check_press(self, instance_table, current_row):
@@ -250,7 +266,7 @@ class QRCodeScannerApp(MDApp):
         label.text = str(quantity)
 
     def on_stop(self):
-        self.capture.release()
+        self.cam.play = False
         
 
 
