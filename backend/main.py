@@ -1,4 +1,4 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, UploadFile, File
 from fastapi.middleware.cors import CORSMiddleware
 import uvicorn
 import json
@@ -37,7 +37,9 @@ def create_container():
     try:
         next_container_folder = str(len(os.listdir(containers_folder)) + 1)
         container_path = os.path.join(containers_folder, next_container_folder)
+        image_folder = os.path.join(container_path, "images")
         os.makedirs(container_path)
+        os.makedirs(image_folder)
         utils.generate_qr(container_path, next_container_folder)
         utils.load_product_types(current_dir, container_path)
         return {"message": f"Создана новая папка контейнера № {next_container_folder}, QR код доступен по пути: {container_path}"}
@@ -179,6 +181,29 @@ def find_product(name: str):
                 product_inside.append(container)
 
     return product_inside
+
+
+@app.post("/images/{container_id}")
+def add_image(container_id: int, image: UploadFile = File(...)):
+    container_id = str(container_id)
+    current_container = os.path.join(containers_folder, container_id)
+    image_folder = os.path.join(current_container, "images")
+
+    try:
+        img_num = len(os.listdir(image_folder)) + 1
+        img_name = f"{img_num}.png"
+        img_path = os.path.join(image_folder, img_name)
+        contents = image.file.read()
+
+        with open(img_path, "wb") as f:
+            f.write(contents)
+        
+    except Exception as e:
+        return {"message": "Ошибка загрузки фотографии"}
+    
+    finally:
+        image.file.close()
+        return {f"message": "Фотография сохранена в контейнер {container_id}"}
 
 if __name__ == "__main__":
     utils.init_containers_folder(containers_folder)
