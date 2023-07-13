@@ -26,6 +26,13 @@ def increase_product_quantity(container_id: int, product_id: int):
 
     return data
 
+def decrease_product_quantity(container_id: int, product_id: int):
+    url = f"http://127.0.0.1:8000/products/{container_id}/{product_id}/decrease"
+    response = requests.put(url)
+    data = response.json()
+
+    return data
+
 def get_containers_images(container_id: int):
     url = f"http://127.0.0.1:8000/images/{container_id}"
     response = requests.get(url)
