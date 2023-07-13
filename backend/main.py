@@ -33,6 +33,8 @@ app.add_middleware(
 """
 API routes
 """
+
+
 @app.post("/containers/create")
 def create_container():
     try:
@@ -43,9 +45,11 @@ def create_container():
         os.makedirs(image_folder)
         utils.generate_qr(container_path, next_container_folder)
         utils.load_product_types(current_dir, container_path)
-        return {"message": f"Создана новая папка контейнера № {next_container_folder}, QR код доступен по пути: {container_path}"}
+        return {
+            "message": f"Создана новая папка контейнера № {next_container_folder}, QR код доступен по пути: {container_path}"}
     except Exception as e:
         return {"message": "Ошибка создания директории контейнера, проверьте структуру папок"}
+
 
 @app.get("/containers/{container_id}")
 def get_container(container_id: int):
@@ -58,7 +62,8 @@ def get_container(container_id: int):
         return products
     except Exception as e:
         return {"message": "Ошибка чтения контейнера, возможно в нем нет изделий или он не существует"}
-    
+
+
 @app.get("/containers/")
 def get_all_containers():
     # получаем все контейнеры в формате словаря {container_id: путь}
@@ -82,11 +87,12 @@ def get_all_containers():
         containers_dict[container] = container_data
 
     return containers_dict
-    
+
+
 @app.post("/products/create")
 def create_product(product: dict):
     name = product.get("name")
-    type = product.get("type")
+    _type = product.get("type")
     capacity = product.get("capacity")
     voltage = product.get("voltage")
     resistance = product.get("resistance")
@@ -104,21 +110,22 @@ def create_product(product: dict):
         else:
             last_id = data[-1]["id"]
             new_id = last_id + 1
-    
+
             new_type = {
-                    "id": new_id,
-                    "name": name,
-                    "type": type,
-                    "capacity": capacity,
-                    "voltage": voltage,
-                    "resistance": resistance,
-                    "quantity": 0
-                }
+                "id": new_id,
+                "name": name,
+                "type": _type,
+                "capacity": capacity,
+                "voltage": voltage,
+                "resistance": resistance,
+                "quantity": 0
+            }
             data.append(new_type)
             utils.append_product_types(current_dir, data)
             utils.data_dumper(file_path, data)
-                
+
     return {"message": "Добавлен новый тип изделия во все контейнеры"}
+
 
 @app.put("/products/{container_id}/{product_id}/increase")
 def increase_product_quantity(container_id: int, product_id: int):
@@ -126,13 +133,13 @@ def increase_product_quantity(container_id: int, product_id: int):
     current_container = os.path.join(containers_folder, container_id)
     file_path = os.path.join(current_container, "products.json")
     product_types_path = os.path.join(current_dir, "product_types.json")
-    
+
     try:
         data = utils.data_loader(file_path)
         product_types = utils.data_loader(product_types_path)
     except Exception as e:
         return {"message": "Ошибка чтения контейнера или продукта, возможно он не существует"}
-    
+
     # Поиск продукта по id
     for product_data, product_type in zip(data, product_types):
         if product_data["id"] == product_id:
@@ -142,22 +149,23 @@ def increase_product_quantity(container_id: int, product_id: int):
 
     utils.data_dumper(file_path, data)
     utils.data_dumper(product_types_path, product_types)
-    
+
     return {"message": "Количество продукта увеличено"}
-    
+
+
 @app.put("/products/{container_id}/{product_id}/decrease")
 def decrease_product_quantity(container_id: int, product_id: int):
     container_id = str(container_id)
     current_container = os.path.join(containers_folder, container_id)
     file_path = os.path.join(current_container, "products.json")
     product_types_path = os.path.join(current_dir, "product_types.json")
-    
+
     try:
         data = utils.data_loader(file_path)
         product_types = utils.data_loader(product_types_path)
     except Exception as e:
         return {"message": "Ошибка чтения контейнера или продукта, возможно он не существует"}
-    
+
     # Поиск продукта по id
     for product_data, product_type in zip(data, product_types):
         if product_data["id"] == product_id:
@@ -167,8 +175,9 @@ def decrease_product_quantity(container_id: int, product_id: int):
 
     utils.data_dumper(file_path, data)
     utils.data_dumper(product_types_path, product_types)
-    
+
     return {"message": "Количество продукта уменьшено"}
+
 
 @app.get("/products/{name}")
 def find_product(name: str):
@@ -203,14 +212,15 @@ def add_image(container_id: int, image: UploadFile = File(...)):
 
         with open(img_path, "wb") as f:
             f.write(contents)
-        
+
     except Exception as e:
         return {"message": "Ошибка загрузки фотографии"}
-    
+
     finally:
         image.file.close()
         return {"message": f"Фотография сохранена в контейнер {container_id}"}
-    
+
+
 @app.get("/images/{container_id}/{image_name}")
 def get_image(container_id: int, image_name: str):
     container_id = str(container_id)
@@ -219,7 +229,8 @@ def get_image(container_id: int, image_name: str):
     image_path = os.path.join(image_folder, image_name)
 
     return FileResponse(image_path, media_type="image/png")
-    
+
+
 @app.get("/images/{container_id}")
 def get_images(container_id: int, request: Request):
     container_id = str(container_id)
@@ -234,7 +245,6 @@ def get_images(container_id: int, request: Request):
 
     return image_urls
 
-    
 
 if __name__ == "__main__":
     utils.init_containers_folder(containers_folder)
