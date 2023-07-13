@@ -112,7 +112,7 @@ def create_product(name: str, type: str, capacity: int, voltage: int, resistance
             utils.append_product_types(current_dir, data)
             utils.data_dumper(file_path, data)
                 
-    return {"message": f"Добавлен новый тип изделия во все контейнеры"}
+    return {"message": "Добавлен новый тип изделия во все контейнеры"}
 
 @app.put("/products/{container_id}/{product_id}/increase")
 def increase_product_quantity(container_id: int, product_id: int):
@@ -203,7 +203,25 @@ def add_image(container_id: int, image: UploadFile = File(...)):
     
     finally:
         image.file.close()
-        return {f"message": "Фотография сохранена в контейнер {container_id}"}
+        return {"message": f"Фотография сохранена в контейнер {container_id}"}
+    
+@app.get("/images/{container_id}")
+def get_images(container_id: int):
+    container_id = str(container_id)
+    current_container = os.path.join(containers_folder, container_id)
+    image_folder = os.path.join(current_container, "images")
+
+    try:
+        images = []
+        for filename in os.listdir(image_folder):
+            if filename.endswith(".png"):
+                image_path = os.path.join(image_folder, filename)
+                images.append({"path": image_path, "type": "image/png"})
+
+        return images
+
+    except Exception as e:
+        return {"message": "Ошибка при получении фотографий"}
 
 if __name__ == "__main__":
     utils.init_containers_folder(containers_folder)

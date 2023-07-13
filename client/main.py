@@ -72,6 +72,7 @@ class QRCodeScannerApp(MDApp):
             layout.ids['containerlist'].add_widget(containerItem)
 
 
+
     def start_scanning(self, *args):
         if self.is_processing_frame:
             return
