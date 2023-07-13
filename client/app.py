@@ -2,7 +2,7 @@ import cv2
 from kivymd.app import MDApp
 from kivy.core.window import Window
 from kivymd.uix.datatables import MDDataTable
-from kivymd.uix.list import IRightBodyTouch, OneLineAvatarIconListItem, IconLeftWidget
+from kivymd.uix.list import IRightBodyTouch, OneLineAvatarIconListItem, IconLeftWidget, IconRightWidget
 from kivymd.uix.boxlayout import MDBoxLayout
 from kivymd.uix.button import MDIconButton
 from kivy.uix.boxlayout import BoxLayout
@@ -65,21 +65,25 @@ class QRCodeScannerApp(MDApp):
                 IconLeftWidget(icon="folder", on_press=lambda *args, id=self.image_paths: self.show_image(id)),
                 text=f"Контейнер № {container_id}", on_press=lambda *args, id=container_id: self.show_table_popup(id)
             )
-
+            # Create and add IconRightWidget
+            icon_right = IconRightWidget(icon="camera",on_press=lambda *args, id=container_id: self.on_icon_right_press(id))
+            containerItem.add_widget(icon_right)
             # containerItem.bind(on_release=lambda *args, id=container_id: self.show_table_popup(id))
 
             layout.ids['containerlist'].add_widget(containerItem)
+    #Заготовка для съемки контейнера
+    def on_icon_right_press(self,id):
+        print(id)
 
     def submit_values(self):
         name = self.root.ids.name_input.text
-        type = self.root.ids.type_input.text
-        capacity = self.root.ids.capacity_input.text
-        voltage = self.root.ids.voltage_input.text
-        resistance = self.root.ids.resistance_input.text
-        controller.create_product(name, type, capacity, voltage, resistance)
+        _type = self.root.ids.type_input.text
+        capacity = int(self.root.ids.capacity_input.text)
+        voltage = int(self.root.ids.voltage_input.text)
+        resistance = int(self.root.ids.resistance_input.text)
+        controller.create_product(name, _type, capacity, voltage, resistance)
 
-    # Keep a list of image paths
-    # image_paths = []
+
 
     def show_image(self, paths):
 
