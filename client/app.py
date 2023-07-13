@@ -85,16 +85,21 @@ class QRCodeScannerApp(MDApp):
 
         # Create image widget
         self.image = AsyncImage(source=self.image_paths[self.image_index])
+        self.image.size_hint = (1, 1)
 
         # Add buttons to scroll images
-        left_button = Button(text='Prev', on_press=self.show_prev)
-        right_button = Button(text='Next', on_press=self.show_next)
+        left_button = Button(text='Назад', on_press=self.show_prev, size_hint=(0.5, None), height = dp(50))
+        right_button = Button(text='Вперед', on_press=self.show_next, size_hint=(0.5, None), height = dp(50))
 
         # Add to layout
         layout = BoxLayout(orientation='vertical')
         layout.add_widget(self.image)
-        layout.add_widget(left_button)
-        layout.add_widget(right_button)
+
+        buttons_layout = BoxLayout(orientation='horizontal', size_hint=(1, None), height= dp(50))
+        buttons_layout.add_widget(left_button)
+        buttons_layout.add_widget(right_button)
+
+        layout.add_widget(buttons_layout)
 
         image_popup.content = layout
         image_popup.open()
