@@ -19,6 +19,7 @@ def get_container(container_id):
 
     return data
 
+
 def increase_product_quantity(container_id: int, product_id: int):
     url = f"http://127.0.0.1:8000/products/{container_id}/{product_id}/increase"
     response = requests.put(url)
@@ -26,12 +27,14 @@ def increase_product_quantity(container_id: int, product_id: int):
 
     return data
 
+
 def decrease_product_quantity(container_id: int, product_id: int):
     url = f"http://127.0.0.1:8000/products/{container_id}/{product_id}/decrease"
     response = requests.put(url)
     data = response.json()
 
     return data
+
 
 def get_containers_images(container_id: int):
     url = f"http://127.0.0.1:8000/images/{container_id}"
@@ -43,15 +46,16 @@ def get_containers_images(container_id: int):
     else:
         print("Ошибка при получении изображений")
 
-def create_product(name: str, type: str, capacity: int, voltage: int, resistance: int):
+
+def create_product(name: str, _type: str, capacity: int, voltage: int, resistance: int):
     url = "http://127.0.0.1:8000/products/create"
     data = {
         "name": name,
-        "type": type,
+        "type": _type,
         "capacity": capacity,
         "voltage": voltage,
         "resistance": resistance
     }
     response = requests.post(url, json=data)
-    
+
     return response.json()
