@@ -70,6 +70,14 @@ class QRCodeScannerApp(MDApp):
 
             layout.ids['containerlist'].add_widget(containerItem)
 
+    def submit_values(self):
+        name = self.root.ids.name_input.text
+        type = self.root.ids.type_input.text
+        capacity = self.root.ids.capacity_input.text
+        voltage = self.root.ids.voltage_input.text
+        resistance = self.root.ids.resistance_input.text
+        controller.create_product(name, type, capacity, voltage, resistance)
+
     # Keep a list of image paths
     # image_paths = []
 

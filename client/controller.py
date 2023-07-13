@@ -42,3 +42,16 @@ def get_containers_images(container_id: int):
         return paths
     else:
         print("Ошибка при получении изображений")
+
+def create_product(name: str, type: str, capacity: int, voltage: int, resistance: int):
+    url = "http://127.0.0.1:8000/products/create"
+    data = {
+        "name": name,
+        "type": type,
+        "capacity": capacity,
+        "voltage": voltage,
+        "resistance": resistance
+    }
+    response = requests.post(url, json=data)
+    
+    return response.json()

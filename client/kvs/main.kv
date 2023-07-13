@@ -80,3 +80,41 @@ MDBoxLayout:
             name: "screen 3"
             text: "Создать изделие"
             icon: "plus"
+
+            BoxLayout:
+                orientation: 'vertical'
+                spacing: '10dp'
+                padding: '10dp'
+            
+                MDTextField:
+                    id: name_input
+                    hint_text: "Имя"
+                    mode: "rectangle"
+                    
+                MDTextField:
+                    id: type_input
+                    hint_text: "Тип"
+                    mode: "rectangle"
+                    
+                MDTextField:
+                    id: capacity_input
+                    hint_text: "Емкость"
+                    mode: "rectangle"
+                    input_type: "number"
+                    
+                MDTextField:
+                    id: voltage_input
+                    hint_text: "Напряжение"
+                    mode: "rectangle"
+                    input_type: "number"
+                    
+                MDTextField:
+                    id: resistance_input
+                    hint_text: "Сопротивление"
+                    mode: "rectangle"
+                    input_type: "number"
+                    
+                Button:
+                    id: submit_button
+                    text: "Создать"
+                    on_press: app.submit_values()

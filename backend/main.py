@@ -84,7 +84,12 @@ def get_all_containers():
     return containers_dict
     
 @app.post("/products/create")
-def create_product(name: str, type: str, capacity: int, voltage: int, resistance: int):
+def create_product(product: dict):
+    name = product.get("name")
+    type = product.get("type")
+    capacity = product.get("capacity")
+    voltage = product.get("voltage")
+    resistance = product.get("resistance")
     # при создании изделия оно должно добавляться к специальному файлу 'product_types.json' в папке containers
     containers_list = utils.init_container_list(containers_folder)
 
