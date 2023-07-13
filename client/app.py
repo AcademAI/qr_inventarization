@@ -7,12 +7,12 @@ from kivymd.uix.boxlayout import MDBoxLayout
 from kivymd.uix.button import MDIconButton
 from kivy.uix.boxlayout import BoxLayout
 from kivy.uix.gridlayout import GridLayout
-from kivy.uix.image import Image
+from kivy.uix.image import AsyncImage
 from kivy.uix.button import Button
 from kivy.uix.spinner import Spinner
 from kivy.uix.popup import Popup
 from kivy.graphics.texture import Texture
-from kivy.properties import  StringProperty
+from kivy.properties import StringProperty
 from kivy.lang import Builder
 from kivy.metrics import dp
 from kivy.clock import Clock
@@ -20,11 +20,11 @@ from kivy.uix.camera import Camera
 from pyzbar import pyzbar
 import numpy as np
 import controller
-
 '''
 class ContainerListItem(IRightBodyTouch, MDBoxLayout):
     adaptive_width = True
 '''
+
 
 class AndroidCamera(Camera):
     camera_resolution = (1280, 720)
@@ -62,16 +62,16 @@ class QRCodeScannerApp(MDApp):
         for container_id, container_data in containers_tuple:
             self.image_paths = controller.get_containers_images(container_id)
             containerItem = OneLineAvatarIconListItem(
-                IconLeftWidget(icon="folder",on_press = lambda *args, id=self.image_paths: self.show_image(id)),
-                text=f"Контейнер № {container_id}",on_press=lambda *args, id=container_id: self.show_table_popup(id)
+                IconLeftWidget(icon="folder", on_press=lambda *args, id=self.image_paths: self.show_image(id)),
+                text=f"Контейнер № {container_id}", on_press=lambda *args, id=container_id: self.show_table_popup(id)
             )
 
-            #containerItem.bind(on_release=lambda *args, id=container_id: self.show_table_popup(id))
+            # containerItem.bind(on_release=lambda *args, id=container_id: self.show_table_popup(id))
 
             layout.ids['containerlist'].add_widget(containerItem)
 
     # Keep a list of image paths
-    #image_paths = []
+    # image_paths = []
 
     def show_image(self, paths):
 
@@ -84,7 +84,7 @@ class QRCodeScannerApp(MDApp):
         image_popup = Popup(title='Фото контейнера', size_hint=(0.8, 0.8))
 
         # Create image widget
-        self.image = Image(source=self.image_paths[self.image_index])
+        self.image = AsyncImage(source=self.image_paths[self.image_index])
 
         # Add buttons to scroll images
         left_button = Button(text='Prev', on_press=self.show_prev)
@@ -134,7 +134,6 @@ class QRCodeScannerApp(MDApp):
             print(decoded_objects)
 
             if len(decoded_objects) != 0:
-                
                 # Иначе, если не пустой пойманный массив, декодирует
                 last_decoded_object = decoded_objects[0]
                 text = last_decoded_object.data.decode('utf-8')
@@ -297,6 +296,7 @@ class QRCodeScannerApp(MDApp):
 
     def on_screen_leave(self, *args):
         self.on_stop()
+
 
 if __name__ == '__main__':
     QRCodeScannerApp().run()
