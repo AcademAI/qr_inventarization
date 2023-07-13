@@ -175,6 +175,21 @@ class QRCodeScannerApp(MDApp):
                 row[-1] += 1  # Increase the quantity by 1
                 self.table_layout.update_row(self.table_layout.row_data[id_prod - 1], row)
 
+    def decrease_selected_quantity(self, row_data, container_id, product_data):
+        global check_list
+
+        for row in row_data:
+            if self.in_list(row):
+                temp = []
+                for i in row:
+                    temp.append(i)
+
+                id_prod = self.get_prod_id(row[0], product_data)
+                print(container_id, id_prod)
+                controller.decrease_product_quantity(container_id=container_id, product_id=id_prod)
+                row[-1] -= 1  # Increase the quantity by 1
+                self.table_layout.update_row(self.table_layout.row_data[id_prod - 1], row)
+
     def show_table_popup(self, text):
         global check_list
         check_list = []
@@ -189,10 +204,10 @@ class QRCodeScannerApp(MDApp):
 
         table_data = values
         self.table_layout = MDDataTable(
-            pos_hint={'center_x': 0.5, 'center_y': 0.5},
-            size_hint=(0.8, 0.8),
+            pos_hint={'center_x': 0.5, 'center_y': 0},
+            size_hint=(1, 0.8),
             use_pagination=True,
-            rows_num=3,
+            rows_num=6,
             check=True,  # Enable row selection with checkboxes
             column_data=[
                 ("Название", dp(30)),
@@ -209,16 +224,20 @@ class QRCodeScannerApp(MDApp):
         increase_button = Button(text='Увеличить', size_hint=(1, 0.2))
         increase_button.bind(
             on_press=lambda instance: self.increase_selected_quantity(table_data, container_id, product_data))
+        decrease_button = Button(text='Уменьшить', size_hint=(1, 0.2))
+        decrease_button.bind(
+            on_press=lambda instance: self.decrease_selected_quantity(table_data, container_id, product_data))
 
-        button_layout = GridLayout(cols=2, size_hint=(1, None), height=dp(48))
+        button_layout = GridLayout(cols=3, size_hint=(1, None), height=dp(48))
         button_layout.add_widget(close_button)
         button_layout.add_widget(increase_button)
+        button_layout.add_widget(decrease_button)
 
         layout = BoxLayout(orientation='vertical')
         layout.add_widget(self.table_layout)
         layout.add_widget(button_layout)
 
-        table_popup = Popup(title=f"Содержимое контейнера № {container_id}", content=layout, size_hint=(0.8, 0.8))
+        table_popup = Popup(title=f"Содержимое контейнера № {container_id}", content=layout, size_hint=(1, 0.8))
         table_popup.bind(on_press=self.close_popup)
 
         table_popup.open()
@@ -229,7 +248,7 @@ class QRCodeScannerApp(MDApp):
         global check_list
         '''Called when the check box in the table row is checked.'''
         for i in check_list:
-            if i == current_row:
+            if i[0] == current_row[0] and i[1] == current_row[1]:
                 check_list.remove(i)
                 return
         check_list.append(current_row)
