@@ -60,18 +60,55 @@ class QRCodeScannerApp(MDApp):
         containers_tuple = controller.get_all_containers()
 
         for container_id, container_data in containers_tuple:
+            self.image_paths = controller.get_containers_images(container_id)
             containerItem = OneLineAvatarIconListItem(
-                IconLeftWidget(
-                    icon="folder"
-                ),
-                text=f"Контейнер № {container_id}", 
+                IconLeftWidget(icon="folder",on_press = lambda *args, id=self.image_paths: self.show_image(id)),
+                text=f"Контейнер № {container_id}",on_press=lambda *args, id=container_id: self.show_table_popup(id)
             )
 
-            containerItem.bind(on_release=lambda *args, id=container_id: self.show_table_popup(id))
+            #containerItem.bind(on_release=lambda *args, id=container_id: self.show_table_popup(id))
 
             layout.ids['containerlist'].add_widget(containerItem)
 
+    # Keep a list of image paths
+    #image_paths = []
 
+    def show_image(self, paths):
+
+        # Set current image index
+        self.image_index = 0
+
+        # Store paths
+        self.image_paths = paths
+
+        image_popup = Popup(title='Image', size_hint=(0.8, 0.8))
+
+        # Create image widget
+        self.image = Image(source=self.image_paths[self.image_index])
+
+        # Add buttons to scroll images
+        left_button = Button(text='Prev', on_press=self.show_prev)
+        right_button = Button(text='Next', on_press=self.show_next)
+
+        # Add to layout
+        layout = BoxLayout(orientation='vertical')
+        layout.add_widget(self.image)
+        layout.add_widget(left_button)
+        layout.add_widget(right_button)
+
+        image_popup.content = layout
+        image_popup.open()
+
+    def show_prev(self, *args):
+        self.image_index -= 1
+        if self.image_index < 0:
+            self.image_index = len(self.image_paths) - 1
+
+        self.image.source = self.image_paths[self.image_index]
+
+    def show_next(self, *args):
+        self.image_index = (self.image_index + 1) % len(self.image_paths)
+        self.image.source = self.image_paths[self.image_index]
 
     def start_scanning(self, *args):
         if self.is_processing_frame:
