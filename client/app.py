@@ -81,7 +81,7 @@ class QRCodeScannerApp(MDApp):
         # Store paths
         self.image_paths = paths
 
-        image_popup = Popup(title='Image', size_hint=(0.8, 0.8))
+        image_popup = Popup(title='Фото контейнера', size_hint=(0.8, 0.8))
 
         # Create image widget
         self.image = Image(source=self.image_paths[self.image_index])
@@ -133,9 +133,8 @@ class QRCodeScannerApp(MDApp):
             decoded_objects = pyzbar.decode(gray)
             print(decoded_objects)
 
-            if len(decoded_objects) == 0:
-                pass
-            else:
+            if len(decoded_objects) != 0:
+                
                 # Иначе, если не пустой пойманный массив, декодирует
                 last_decoded_object = decoded_objects[0]
                 text = last_decoded_object.data.decode('utf-8')

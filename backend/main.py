@@ -1,5 +1,6 @@
-from fastapi import FastAPI, UploadFile, File
+from fastapi import FastAPI, UploadFile, File, Request
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import FileResponse
 import uvicorn
 import json
 import os
@@ -205,23 +206,30 @@ def add_image(container_id: int, image: UploadFile = File(...)):
         image.file.close()
         return {"message": f"Фотография сохранена в контейнер {container_id}"}
     
+@app.get("/images/{container_id}/{image_name}")
+def get_image(container_id: int, image_name: str):
+    container_id = str(container_id)
+    current_container = os.path.join(containers_folder, container_id)
+    image_folder = os.path.join(current_container, "images")
+    image_path = os.path.join(image_folder, image_name)
+
+    return FileResponse(image_path, media_type="image/png")
+    
 @app.get("/images/{container_id}")
-def get_images(container_id: int):
+def get_images(container_id: int, request: Request):
     container_id = str(container_id)
     current_container = os.path.join(containers_folder, container_id)
     image_folder = os.path.join(current_container, "images")
 
-    try:
-        images = []
-        for filename in os.listdir(image_folder):
-            if filename.endswith(".png"):
-                image_path = os.path.join(image_folder, filename)
-                images.append({"path": image_path, "type": "image/png"})
+    image_urls = []
+    for filename in os.listdir(image_folder):
+        if filename.endswith(".png"):
+            image_url = request.url_for("get_image", container_id=container_id, image_name=filename)
+            image_urls.append(image_url)
 
-        return images
+    return image_urls
 
-    except Exception as e:
-        return {"message": "Ошибка при получении фотографий"}
+    
 
 if __name__ == "__main__":
     utils.init_containers_folder(containers_folder)

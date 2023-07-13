@@ -37,8 +37,8 @@ def get_containers_images(container_id: int):
     url = f"http://127.0.0.1:8000/images/{container_id}"
     response = requests.get(url)
     if response.status_code == 200:
-        images = response.json()  # получаем байты изображения
-        paths = [image['path'] for image in images]
-        return paths
+        images = response.json()
+        urls = [image['url'] for image in images]
+        return urls
     else:
         print("Ошибка при получении изображений")
