@@ -115,9 +115,9 @@ def create_product(product: dict):
                 "id": new_id,
                 "name": name,
                 "type": _type,
-                "capacity": capacity,
-                "voltage": voltage,
-                "resistance": resistance,
+                "capacity": int(capacity),
+                "voltage": int(voltage),
+                "resistance": int(resistance),
                 "quantity": 0
             }
             data.append(new_type)
