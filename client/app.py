@@ -19,6 +19,7 @@ from kivy.clock import Clock
 from kivy.uix.camera import Camera
 from pyzbar import pyzbar
 import numpy as np
+import tempfile
 import controller
 '''
 class ContainerListItem(IRightBodyTouch, MDBoxLayout):
@@ -156,8 +157,18 @@ class QRCodeScannerApp(MDApp):
                 text = last_decoded_object.data.decode('utf-8')
 
                 container_id = text[-1]
+                # Создание временного файла в памяти
+                # Создание временного файла в памяти
+                with tempfile.TemporaryDirectory() as temp_dir:
+                    temp_file_path = temp_dir + '/image.png'
+                    image_object.save(temp_file_path)
+                    with open(temp_file_path, 'rb') as temp_file:
+                        image_data = temp_file.read()
+
                 self.is_processing_frame = False
                 self.show_table_popup(container_id)
+                controller.upload_image(1, image_data)
+                
 
         if self.is_processing_frame:
             Clock.schedule_once(self.process_frame, 0)

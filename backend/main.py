@@ -210,6 +210,7 @@ def add_image(container_id: int, image: UploadFile = File(...)):
         img_path = os.path.join(image_folder, img_name)
         contents = image.file.read()
 
+        # Запись содержимого временного файла в файл на сервере
         with open(img_path, "wb") as f:
             f.write(contents)
 

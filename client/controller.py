@@ -46,6 +46,11 @@ def get_containers_images(container_id: int):
     else:
         print("Ошибка при получении изображений")
 
+def upload_image(container_id: int, image):
+    url = f"http://localhost:8000/images/{container_id}"
+    response = requests.post(url, files={"image": image})
+    return response.json()
+
 
 def create_product(name: str, _type: str, capacity: int, voltage: int, resistance: int):
     url = "http://127.0.0.1:8000/products/create"
