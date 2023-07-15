@@ -21,6 +21,7 @@ from pyzbar import pyzbar
 import numpy as np
 import tempfile
 import controller
+
 '''
 class ContainerListItem(IRightBodyTouch, MDBoxLayout):
     adaptive_width = True
@@ -67,14 +68,69 @@ class QRCodeScannerApp(MDApp):
                 text=f"Контейнер № {container_id}", on_press=lambda *args, id=container_id: self.show_table_popup(id)
             )
             # Create and add IconRightWidget
-            icon_right = IconRightWidget(icon="camera",on_press=lambda *args, id=container_id: self.on_icon_right_press(id))
+            icon_right = IconRightWidget(icon="camera",
+                                         on_press=lambda *args, id=container_id: self.on_icon_right_press(id))
             containerItem.add_widget(icon_right)
             # containerItem.bind(on_release=lambda *args, id=container_id: self.show_table_popup(id))
 
             layout.ids['containerlist'].add_widget(containerItem)
-    #Заготовка для съемки контейнера
-    def on_icon_right_press(self,id):
-        print(id)
+
+    # Заготовка для съемки контейнера
+    def on_icon_right_press(self, id):
+        pass
+        """# Set the container ID for which the photo is being taken
+        self.container_id = id
+
+        # Create a popup to show the camera preview
+        camera_popup = Popup(title='Фотография контейнера', size_hint=(0.9, 0.9))
+
+        # Create the camera widget
+        camera = AndroidCamera(play=True, index=0, resolution=(1280, 720))
+
+        # Create a button to take the photo
+        take_photo_button = Button(text='Сфотографировать', size_hint=(0.5, None), height=dp(50))
+        take_photo_button.bind(on_press=lambda *args: self.take_photo(camera, camera_popup))
+
+        # Create a layout to hold the camera and the button
+        layout = BoxLayout(orientation='vertical')
+        layout.add_widget(camera)
+        layout.add_widget(take_photo_button)
+
+        # Add the layout to the popup
+        camera_popup.content = layout
+
+        # Open the popup
+        camera_popup.open()
+
+    def take_photo(self, camera, camera_popup):
+        # Capture the image from the camera
+        image = camera.export_as_image()
+
+        with tempfile.TemporaryDirectory() as temp_dir:
+            temp_file_path = temp_dir + '/image.png'
+            image.save(temp_file_path)
+            with open(temp_file_path, 'rb') as temp_file:
+                image_data = temp_file.read()
+        # Save the image to a temporary file
+
+            # Do something with the image file, e.g., upload to server
+            controller.upload_image(self.container_id, image_data)
+
+            # Close the camera popup
+            camera_popup.dismiss()
+
+            # Remove the camera instance
+            Window.remove_widget(camera)
+
+            # Update the camera widget
+            #self.update_camera_widget()
+
+    def update_camera_widget(self):
+        # Find the camera widget that's currently displayed on the screen
+        for widget in Window.children:
+            if isinstance(widget, AndroidCamera):
+                self.cam = widget
+                break"""
 
     def submit_values(self):
         name = self.root.ids.name_input.text
@@ -83,8 +139,6 @@ class QRCodeScannerApp(MDApp):
         voltage = int(self.root.ids.voltage_input.text)
         resistance = int(self.root.ids.resistance_input.text)
         controller.create_product(name, _type, capacity, voltage, resistance)
-
-
 
     def show_image(self, paths):
 
@@ -101,14 +155,14 @@ class QRCodeScannerApp(MDApp):
         self.image.size_hint = (1, 1)
 
         # Add buttons to scroll images
-        left_button = Button(text='Назад', on_press=self.show_prev, size_hint=(0.5, None), height = dp(50))
-        right_button = Button(text='Вперед', on_press=self.show_next, size_hint=(0.5, None), height = dp(50))
+        left_button = Button(text='Назад', on_press=self.show_prev, size_hint=(0.5, None), height=dp(50))
+        right_button = Button(text='Вперед', on_press=self.show_next, size_hint=(0.5, None), height=dp(50))
 
         # Add to layout
         layout = BoxLayout(orientation='vertical')
         layout.add_widget(self.image)
 
-        buttons_layout = BoxLayout(orientation='horizontal', size_hint=(1, None), height= dp(50))
+        buttons_layout = BoxLayout(orientation='horizontal', size_hint=(1, None), height=dp(50))
         buttons_layout.add_widget(left_button)
         buttons_layout.add_widget(right_button)
 
@@ -136,7 +190,6 @@ class QRCodeScannerApp(MDApp):
         Clock.schedule_once(self.process_frame, 0.5)
 
     def process_frame(self, dt):
-        image_object = None
         if not self.cam.play:
             self.cam.play = True
         image_object = self.cam.export_as_image()
@@ -157,21 +210,13 @@ class QRCodeScannerApp(MDApp):
                 text = last_decoded_object.data.decode('utf-8')
 
                 container_id = text[-1]
-                # Создание временного файла в памяти
-                # Создание временного файла в памяти
-                with tempfile.TemporaryDirectory() as temp_dir:
-                    temp_file_path = temp_dir + '/image.png'
-                    image_object.save(temp_file_path)
-                    with open(temp_file_path, 'rb') as temp_file:
-                        image_data = temp_file.read()
 
                 self.is_processing_frame = False
                 self.show_table_popup(container_id)
-                controller.upload_image(1, image_data)
-                
 
         if self.is_processing_frame:
             Clock.schedule_once(self.process_frame, 0)
+
 
     def in_list(self, row):
         global check_list
