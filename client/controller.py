@@ -51,6 +51,13 @@ def upload_image(container_id: int, image):
     response = requests.post(url, files={"image": image})
     return response.json()
 
+def delete_image(container_id: int, image_name: str):
+    url = f"http://127.0.0.1:8000/images/{container_id}/{image_name}"
+    response = requests.delete(url)
+    data = response.json()
+
+    return data
+
 
 def create_product(name: str, _type: str, capacity: int, voltage: int, resistance: int):
     url = "http://127.0.0.1:8000/products/create"
