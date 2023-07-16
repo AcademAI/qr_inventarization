@@ -22,6 +22,7 @@ import numpy as np
 import tempfile
 import controller
 
+
 '''
 class ContainerListItem(IRightBodyTouch, MDBoxLayout):
     adaptive_width = True
@@ -147,7 +148,8 @@ class QRCodeScannerApp(MDApp):
         # Store paths
         self.image_paths = paths
 
-        image_popup = Popup(title='Фото контейнера', size_hint=(0.8, 0.8))
+        image_popup = Popup(title='Фото контейнера', size_hint=(1, 1))
+
 
         # Create image widget
         self.image = AsyncImage(source=self.image_paths[self.image_index])
@@ -167,10 +169,10 @@ class QRCodeScannerApp(MDApp):
         buttons_layout = BoxLayout(orientation='horizontal', size_hint=(1, None), height=dp(50))
         buttons_layout.add_widget(left_button)
         buttons_layout.add_widget(right_button)
-
+        close_button = MDIconButton(icon='close', on_release=image_popup.dismiss)
+        buttons_layout.add_widget(close_button)
         layout.add_widget(buttons_layout)
         layout.add_widget(delete_button)
-
         image_popup.content = layout
         image_popup.open()
 
@@ -293,7 +295,8 @@ class QRCodeScannerApp(MDApp):
             row_data = [product['name'], product['type'], product['quantity']]
             values.append(row_data)
 
-        table_data = values
+        table_data = sorted(values, key=lambda x: x[2])
+        table_data = table_data[::-1]
         self.table_layout = MDDataTable(
             pos_hint={'center_x': 0.5, 'center_y': 0},
             size_hint=(1, 0.8),
@@ -306,7 +309,8 @@ class QRCodeScannerApp(MDApp):
                 ("Количество", dp(30)),
             ],
             row_data=table_data,
-
+            sorted_on="Количество",
+            sorted_order="ASC",
         )
         self.table_layout.bind(on_check_press=self.on_check_press)
         close_button = Button(text='Закрыть', size_hint=(1, 0.2))
@@ -326,21 +330,20 @@ class QRCodeScannerApp(MDApp):
         folder_button.bind(on_press = lambda instance: self.show_image(self.image_paths))  # Add on_press callback
         camera_button = MDIconButton(icon='camera', theme_text_color='Custom')
         camera_button.bind(on_press = lambda instance: self.on_icon_right_press(int(container_id)))  # Add on_press callback
+
         button_layout.add_widget(folder_button)
         button_layout.add_widget(camera_button)
-
-
         button_layout.add_widget(close_button)
         button_layout.add_widget(increase_button)
         button_layout.add_widget(decrease_button)
 
         layout = BoxLayout(orientation='vertical')
+        close_button11 = MDIconButton(icon='close', size_hint=(None, None), size=(dp(48), dp(48)))
+
         layout.add_widget(self.table_layout)
         layout.add_widget(button_layout)
-
         table_popup = Popup(title=f"Содержимое контейнера № {container_id}", content=layout, size_hint=(1, 1))
         table_popup.bind(on_press=self.close_popup)
-
         table_popup.open()
         self.cam.play = False
         self.is_processing_frame = False
