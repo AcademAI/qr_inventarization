@@ -64,8 +64,8 @@ class QRCodeScannerApp(MDApp):
         for container_id, container_data in containers_tuple:
             self.image_paths = controller.get_containers_images(container_id)
             containerItem = OneLineAvatarIconListItem(
-                IconLeftWidget(icon="folder", on_press=lambda *args, id=self.image_paths: self.show_image(id)),
-                text=f"Контейнер № {container_id}", on_press=lambda *args, id=container_id: self.show_table_popup(id)
+                IconLeftWidget(icon="folder", on_press=lambda *args, _id=self.image_paths: self.show_image(_id)),
+                text=f"Контейнер № {container_id}", on_press=lambda *args, _id=container_id: self.show_table_popup(_id)
             )
             # Create and add IconRightWidget
             icon_right = IconRightWidget(icon="camera",
@@ -140,8 +140,7 @@ class QRCodeScannerApp(MDApp):
         resistance = int(self.root.ids.resistance_input.text)
         controller.create_product(name, _type, capacity, voltage, resistance)
 
-    def show_image(self, paths):
-
+    def show_image(self,paths):
         # Set current image index
         self.image_index = 0
 
@@ -158,6 +157,9 @@ class QRCodeScannerApp(MDApp):
         left_button = Button(text='Назад', on_press=self.show_prev, size_hint=(0.5, None), height=dp(50))
         right_button = Button(text='Вперед', on_press=self.show_next, size_hint=(0.5, None), height=dp(50))
 
+        # Add a button to delete the image
+        delete_button = Button(text='Удалить', on_press = self.delete_image, size_hint=(1, None), height=dp(50))
+
         # Add to layout
         layout = BoxLayout(orientation='vertical')
         layout.add_widget(self.image)
@@ -167,9 +169,27 @@ class QRCodeScannerApp(MDApp):
         buttons_layout.add_widget(right_button)
 
         layout.add_widget(buttons_layout)
+        layout.add_widget(delete_button)
 
         image_popup.content = layout
         image_popup.open()
+
+    def delete_image(self, *args):
+        # Delete the current image
+        if self.image_paths and len(self.image_paths) > 0:
+            img_path = self.image_paths[self.image_index]
+            param = img_path.split('/')
+            controller.delete_image(int(param[-2]),param[-1])
+            self.image.source = ''
+
+            # Remove the deleted image path from the list
+            self.image_paths.remove(img_path)
+            if len(self.image_paths) > 0:
+                # Show the next image if available
+                self.show_next()
+            else:
+                # Close the popup if there are no more images to show
+                self.close_popup()
 
     def show_prev(self, *args):
         self.image_index -= 1
@@ -299,7 +319,17 @@ class QRCodeScannerApp(MDApp):
         decrease_button.bind(
             on_press=lambda instance: self.decrease_selected_quantity(table_data, container_id, product_data))
 
-        button_layout = GridLayout(cols=3, size_hint=(1, None), height=dp(48))
+        button_layout = GridLayout(cols=5, size_hint=(1, None), height=dp(48))
+
+        folder_button = MDIconButton(icon='folder', theme_text_color='Custom')
+        self.image_paths = controller.get_containers_images(container_id)
+        folder_button.bind(on_press = lambda instance: self.show_image(self.image_paths))  # Add on_press callback
+        camera_button = MDIconButton(icon='camera', theme_text_color='Custom')
+        camera_button.bind(on_press = lambda instance: self.on_icon_right_press(int(container_id)))  # Add on_press callback
+        button_layout.add_widget(folder_button)
+        button_layout.add_widget(camera_button)
+
+
         button_layout.add_widget(close_button)
         button_layout.add_widget(increase_button)
         button_layout.add_widget(decrease_button)
