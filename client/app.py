@@ -308,7 +308,7 @@ class QRCodeScannerApp(MDApp):
         layout.add_widget(self.table_layout)
         layout.add_widget(button_layout)
 
-        table_popup = Popup(title=f"Содержимое контейнера № {container_id}", content=layout, size_hint=(1, 0.8))
+        table_popup = Popup(title=f"Содержимое контейнера № {container_id}", content=layout, size_hint=(1, 1))
         table_popup.bind(on_press=self.close_popup)
 
         table_popup.open()
