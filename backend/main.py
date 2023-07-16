@@ -246,6 +246,20 @@ def get_images(container_id: int, request: Request):
 
     return image_urls
 
+@app.delete("/images/{container_id}/{image_name}")
+def delete_image(container_id: int, image_name: str):
+    container_id = str(container_id)
+    current_container = os.path.join(containers_folder, container_id)
+    image_folder = os.path.join(current_container, "images")
+    image_path = os.path.join(image_folder, image_name)
+
+    try:
+        os.remove(image_path)
+    except Exception as e:
+        return {"message": "Ошибка удаления фотографии"}
+
+    return {"message": f"Фотография удалена из контейнера {container_id}"}
+
 
 if __name__ == "__main__":
     utils.init_containers_folder(containers_folder)
