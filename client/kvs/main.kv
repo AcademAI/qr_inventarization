@@ -1,3 +1,10 @@
+<PopupContent@BoxLayout>:
+    orientation: 'vertical'
+
+    MDToolbar:
+        title: 'Fullscreen Table'
+        left_action_items: [['arrow-left', lambda x: root.dismiss()]]
+        elevation: 10
 MDBoxLayout:
     orientation: "vertical"
     pos_hint: {'center_x': 0.5, 'center_y': 0.5}
@@ -5,11 +12,11 @@ MDBoxLayout:
     MDTopAppBar:
         title: "Приложение учета изделий"
         md_bg_color: .2,.2,.2,1
-        
 
     MDBottomNavigation:
 
         MDBottomNavigationItem:
+            id:container_list_screen
             name: "screen 1"
             text: "Контейнеры"
             icon: "folder"
@@ -18,7 +25,7 @@ MDBoxLayout:
 
                 MDList:
                     id: containerlist
-            
+
             GridLayout:
                 cols: 2
                 size_hint_y: None
@@ -49,6 +56,7 @@ MDBoxLayout:
                 rows: 2
 
                 Button:
+                    id: scan_button
                     size_hint: 1, 0.2
                     text: 'Сканировать QR'
                     size_hint: None, None
@@ -85,35 +93,35 @@ MDBoxLayout:
                 orientation: 'vertical'
                 spacing: '10dp'
                 padding: '10dp'
-            
+
                 MDTextField:
                     id: name_input
                     hint_text: "Имя"
                     mode: "rectangle"
-                    
+
                 MDTextField:
                     id: type_input
                     hint_text: "Тип"
                     mode: "rectangle"
-                    
+
                 MDTextField:
                     id: capacity_input
                     hint_text: "Емкость"
                     mode: "rectangle"
                     input_type: "number"
-                    
+
                 MDTextField:
                     id: voltage_input
                     hint_text: "Напряжение"
                     mode: "rectangle"
                     input_type: "number"
-                    
+
                 MDTextField:
                     id: resistance_input
                     hint_text: "Сопротивление"
                     mode: "rectangle"
                     input_type: "number"
-                    
+
                 Button:
                     id: submit_button
                     text: "Создать"
