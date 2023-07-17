@@ -87,20 +87,26 @@ class QRCodeScannerApp(MDApp):
         camera_popup = Popup(title='Фотография контейнера', size_hint=(1, 1))
 
         # Create the camera widget
-        camera = AndroidCamera(play=True, index=0, resolution=(1280, 720))
+        camera = self.cam
+        camera.play = True
+        camera.resolution = (1280, 720)
         #self.cam.play = True
         # Create a button to take the photo
         take_photo_button = Button(text='Сфотографировать', size_hint=(0.5, None), height=dp(50))
-        take_photo_button.bind(on_press=lambda *args: self.take_photo(camera, camera_popup))
+        take_photo_button.bind(on_press=lambda *args: Clock.schedule_once( lambda inst: self.take_photo(camera, camera_popup), 0.5))
 
         # Create a layout to hold the camera and the button
         layout = BoxLayout(orientation='vertical')
-        layout.add_widget(camera)
+
+        #layout.add_widget(camera)
         layout.add_widget(take_photo_button)
         close_button = MDIconButton(icon='close')
         close_button.bind(on_release=lambda instance: self.foto_dismiss(camera_popup,camera))
         layout.add_widget(close_button)
 
+        imn = AsyncImage()
+        layout.add_widget(imn)
+        Clock.schedule_interval(lambda dt: self.get_frame(camera, imn), 1 / 30.0)  # Update the frame at 30 FPS
         # Add the layout to the popup
         camera_popup.content = layout
 
@@ -109,14 +115,20 @@ class QRCodeScannerApp(MDApp):
 
     def foto_dismiss(self,camera_popup,camera):
         camera.play = False
-        camera.remove_from_cache()
-        camera.get_disabled()
         camera_popup.dismiss()
+
+    def get_frame(self, camera, imn):
+        # Capture the image from the camera
+        image = camera.export_as_image()
+        texture = Texture.create(size=image.size)
+        texture.blit_buffer(image._texture.pixels, colorfmt='rgba')
+        imn.texture = texture
 
 
     def take_photo(self, camera, camera_popup):
         # Capture the image from the camera
         image = camera.export_as_image()
+
 
         with tempfile.TemporaryDirectory() as temp_dir:
             temp_file_path = temp_dir + '/image.png'
