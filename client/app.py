@@ -61,6 +61,7 @@ class QRCodeScannerApp(MDApp):
     def containerlist_builder(self, layout):
         '''Вроде починили:)'''
         containers_tuple = controller.get_all_containers()
+        containers_tuple = sorted(containers_tuple, key=lambda x: int(x[0]))
 
         for container_id, container_data in containers_tuple:
             self.image_paths = controller.get_containers_images(container_id)
@@ -70,24 +71,24 @@ class QRCodeScannerApp(MDApp):
             )
             # Create and add IconRightWidget
             icon_right = IconRightWidget(icon="camera",
-                                         on_press=lambda *args, id=container_id: self.on_icon_right_press(id))
+                                         on_press=lambda *args, _id=container_id: self.on_icon_right_press(_id))
             containerItem.add_widget(icon_right)
             # containerItem.bind(on_release=lambda *args, id=container_id: self.show_table_popup(id))
 
             layout.ids['containerlist'].add_widget(containerItem)
 
     # Заготовка для съемки контейнера
-    def on_icon_right_press(self, id):
-        pass
-        """# Set the container ID for which the photo is being taken
-        self.container_id = id
+    def on_icon_right_press(self, _id):
+        #pass
+        # Set the container ID for which the photo is being taken
+        self.container_id = _id
 
         # Create a popup to show the camera preview
-        camera_popup = Popup(title='Фотография контейнера', size_hint=(0.9, 0.9))
+        camera_popup = Popup(title='Фотография контейнера', size_hint=(1, 1))
 
         # Create the camera widget
         camera = AndroidCamera(play=True, index=0, resolution=(1280, 720))
-
+        #self.cam.play = True
         # Create a button to take the photo
         take_photo_button = Button(text='Сфотографировать', size_hint=(0.5, None), height=dp(50))
         take_photo_button.bind(on_press=lambda *args: self.take_photo(camera, camera_popup))
@@ -96,12 +97,22 @@ class QRCodeScannerApp(MDApp):
         layout = BoxLayout(orientation='vertical')
         layout.add_widget(camera)
         layout.add_widget(take_photo_button)
+        close_button = MDIconButton(icon='close')
+        close_button.bind(on_release=lambda instance: self.foto_dismiss(camera_popup,camera))
+        layout.add_widget(close_button)
 
         # Add the layout to the popup
         camera_popup.content = layout
 
         # Open the popup
         camera_popup.open()
+
+    def foto_dismiss(self,camera_popup,camera):
+        camera.play = False
+        camera.remove_from_cache()
+        camera.get_disabled()
+        camera_popup.dismiss()
+
 
     def take_photo(self, camera, camera_popup):
         # Capture the image from the camera
@@ -116,12 +127,12 @@ class QRCodeScannerApp(MDApp):
 
             # Do something with the image file, e.g., upload to server
             controller.upload_image(self.container_id, image_data)
-
+            camera.play = False
             # Close the camera popup
             camera_popup.dismiss()
 
             # Remove the camera instance
-            Window.remove_widget(camera)
+            #Window.remove_widget(camera)
 
             # Update the camera widget
             #self.update_camera_widget()
@@ -131,7 +142,7 @@ class QRCodeScannerApp(MDApp):
         for widget in Window.children:
             if isinstance(widget, AndroidCamera):
                 self.cam = widget
-                break"""
+                break
 
     def submit_values(self):
         name = self.root.ids.name_input.text
@@ -144,13 +155,9 @@ class QRCodeScannerApp(MDApp):
     def show_image(self,paths):
         # Set current image index
         self.image_index = 0
-
         # Store paths
         self.image_paths = paths
-
         image_popup = Popup(title='Фото контейнера', size_hint=(1, 1))
-
-
         # Create image widget
         self.image = AsyncImage(source=self.image_paths[self.image_index])
         self.image.size_hint = (1, 1)
@@ -234,6 +241,7 @@ class QRCodeScannerApp(MDApp):
                 container_id = text[-1]
 
                 self.is_processing_frame = False
+                self.cam.play = False
                 self.show_table_popup(container_id)
 
         if self.is_processing_frame:
