@@ -1,8 +1,10 @@
 import requests
 
-
+global ip_conf
+ip_conf = "127.0.0.1"
+#"172.16.25.124"
 def get_all_containers():
-    url = "http://127.0.0.1:8000/containers/"
+    url = f"http://{ip_conf}:8000/containers/"
     response = requests.get(url)
     data = response.json()
 
@@ -13,7 +15,7 @@ def get_all_containers():
 
 
 def get_container(container_id):
-    url = f"http://127.0.0.1:8000/containers/{container_id}"
+    url = f"http://{ip_conf}:8000/containers/{container_id}"
     response = requests.get(url)
     data = response.json()
 
@@ -21,7 +23,7 @@ def get_container(container_id):
 
 
 def increase_product_quantity(container_id: int, product_id: int):
-    url = f"http://127.0.0.1:8000/products/{container_id}/{product_id}/increase"
+    url = f"http://{ip_conf}:8000/products/{container_id}/{product_id}/increase"
     response = requests.put(url)
     data = response.json()
 
@@ -29,7 +31,7 @@ def increase_product_quantity(container_id: int, product_id: int):
 
 
 def decrease_product_quantity(container_id: int, product_id: int):
-    url = f"http://127.0.0.1:8000/products/{container_id}/{product_id}/decrease"
+    url = f"http://{ip_conf}:8000/products/{container_id}/{product_id}/decrease"
     response = requests.put(url)
     data = response.json()
 
@@ -37,7 +39,7 @@ def decrease_product_quantity(container_id: int, product_id: int):
 
 
 def get_containers_images(container_id: int):
-    url = f"http://127.0.0.1:8000/images/{container_id}"
+    url = f"http://{ip_conf}:8000/images/{container_id}"
     response = requests.get(url)
     if response.status_code == 200:
         images = response.json()  # получаем байты изображения
@@ -47,12 +49,12 @@ def get_containers_images(container_id: int):
         print("Ошибка при получении изображений")
 
 def upload_image(container_id: int, image):
-    url = f"http://localhost:8000/images/{container_id}"
+    url = f"http://{ip_conf}:8000/images/{container_id}"
     response = requests.post(url, files={"image": image})
     return response.json()
 
 def delete_image(container_id: int, image_name: str):
-    url = f"http://127.0.0.1:8000/images/{container_id}/{image_name}"
+    url = f"http://{ip_conf}:8000/images/{container_id}/{image_name}"
     response = requests.delete(url)
     data = response.json()
 
@@ -60,7 +62,7 @@ def delete_image(container_id: int, image_name: str):
 
 
 def create_product(name: str, _type: str, capacity: int, voltage: int, resistance: int):
-    url = "http://127.0.0.1:8000/products/create"
+    url = f"http://{ip_conf}:8000/products/create"
     data = {
         "name": name,
         "type": _type,
@@ -72,6 +74,6 @@ def create_product(name: str, _type: str, capacity: int, voltage: int, resistanc
 
     return response.json()
 def create_container():
-    url = "http://127.0.0.1:8000/containers/create"
+    url = f"http://{ip_conf}:8000/containers/create"
     response = requests.post(url)
     return response.json()
