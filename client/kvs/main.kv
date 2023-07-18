@@ -24,39 +24,8 @@ MDBoxLayout:
     MDBottomNavigation:
 
         MDBottomNavigationItem:
-            id:container_list_screen
-            name: "screen 1"
-            text: "Контейнеры"
-            icon: "folder"
-
-            MDScrollView:
-
-                MDList:
-                    id: containerlist
-
-            GridLayout:
-                cols: 2
-                size_hint_y: None
-                height: self.minimum_height
-                spacing: dp(10)
-
-                Button:
-                    text: 'Поиск'
-                    size_hint: None, None
-                    size: 200, 50
-                    pos_hint: {'center_x': 0.5}
-                    on_press: app.open_search_window()
-
-                Button:
-                    text: 'Добавить контейнер'
-                    size_hint: None, None
-                    size: 200, 50
-                    pos_hint: {'center_x': 0}
-                    on_press: app.open_search_window()
-
-        MDBottomNavigationItem:
             id: screen_with_camera
-            name: "screen 2"
+            name: "screen 1"
             text: "Сканировать QR код"
             icon: "qrcode"
 
@@ -91,6 +60,39 @@ MDBoxLayout:
                                 origin: self.center
                         canvas.after:
                             PopMatrix
+
+        MDBottomNavigationItem:
+            id:container_list_screen
+            name: "screen 2"
+            text: "Контейнеры"
+            icon: "folder"
+
+            MDScrollView:
+
+                MDList:
+                    id: containerlist
+
+            GridLayout:
+                cols: 2
+                size_hint_y: None
+                height: self.minimum_height
+                spacing: dp(10)
+
+                Button:
+                    text: 'Поиск'
+                    size_hint: None, None
+                    size: 200, 50
+                    pos_hint: {'center_x': 0.5}
+                    on_press: app.open_search_window()
+
+                Button:
+                    text: 'Добавить контейнер'
+                    size_hint: None, None
+                    size: 200, 50
+                    pos_hint: {'center_x': 0}
+                    on_press: app.open_search_window()
+
+
 
         MDBottomNavigationItem:
             name: "screen 3"
