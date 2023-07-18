@@ -397,7 +397,8 @@ class QRCodeScannerApp(MDApp):
     '''
 
     def open_search_window(self):
-        if not (self.is_processing_frame):
+        self.search_containers(self.root.ids.search_input.text)
+        """if not (self.is_processing_frame):
             search_layout = BoxLayout(orientation='vertical')
             containers_tuple = controller.get_all_containers()
             containers_tuple = sorted(containers_tuple, key=lambda x: int(x[0]))
@@ -414,7 +415,7 @@ class QRCodeScannerApp(MDApp):
             search_layout.add_widget(spinner)
 
             search_popup = Popup(title='Поиск', content=search_layout, size_hint=(0.6, 0.4))
-            search_popup.open()
+            search_popup.open()"""
 
     def create_container(self):
         controller.create_container()
@@ -439,6 +440,34 @@ class QRCodeScannerApp(MDApp):
 
     def on_screen_leave(self, *args):
         self.on_stop()
+
+    def search_containers(self, search_text):
+        if search_text=="":
+            containerlist = self.root.ids.containerlist
+            containerlist.clear_widgets()
+            containers = controller.get_all_containers()
+            for _id, data in containers:
+                self.containerlist_builder(self.root, _id)
+
+        else:
+            # Get all containers
+            containerlist = self.root.ids.containerlist
+            containerlist.clear_widgets()
+            containers = controller.get_all_containers()
+
+            # Filter containers
+            filtered = []
+            for _id, data in containers:
+                for product in data['products']:
+                    if product['name'] == search_text and product['quantity'] > 0:
+                        self.containerlist_builder(self.root, _id)
+                        filtered.append((_id, data))
+                        break
+
+
+
+
+
 
 
 if __name__ == '__main__':
