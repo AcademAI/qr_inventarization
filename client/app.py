@@ -53,30 +53,30 @@ class QRCodeScannerApp(MDApp):
 
         screen = layout.ids.screen_with_camera
         screen.bind(on_pre_leave=self.on_screen_leave)
-
-        self.containerlist_builder(layout)
-        self.products = {}
-
-        return layout
-
-    def containerlist_builder(self, layout):
-        '''Вроде починили:)'''
         containers_tuple = controller.get_all_containers()
         containers_tuple = sorted(containers_tuple, key=lambda x: int(x[0]))
 
         for container_id, container_data in containers_tuple:
-            self.image_paths = controller.get_containers_images(container_id)
-            containerItem = OneLineAvatarIconListItem(
-                IconLeftWidget(icon="folder", on_press=lambda *args, _id=self.image_paths: self.show_image(_id)),
-                text=f"Контейнер № {container_id}", on_press=lambda *args, _id=container_id: self.show_table_popup(_id)
-            )
-            # Create and add IconRightWidget
-            icon_right = IconRightWidget(icon="camera",
-                                         on_press=lambda *args, _id=container_id: self.on_icon_right_press(_id))
-            containerItem.add_widget(icon_right)
-            # containerItem.bind(on_release=lambda *args, id=container_id: self.show_table_popup(id))
+            self.containerlist_builder(layout, container_id)
+        self.products = {}
 
-            layout.ids['containerlist'].add_widget(containerItem)
+        return layout
+
+    def containerlist_builder(self, layout, container_id):
+        '''Вроде починили:)'''
+
+        #self.image_paths = controller.get_containers_images(container_id)
+        containerItem = OneLineAvatarIconListItem(
+            IconLeftWidget(icon="folder", on_press=lambda *args, _id=container_id: self.show_image(_id)),
+            text=f"Контейнер № {container_id}", on_press=lambda *args, _id=container_id: self.show_table_popup(_id)
+        )
+        # Create and add IconRightWidget
+        icon_right = IconRightWidget(icon="camera",
+                                        on_press=lambda *args, _id=container_id: self.on_icon_right_press(_id))
+        containerItem.add_widget(icon_right)
+        # containerItem.bind(on_release=lambda *args, id=container_id: self.show_table_popup(id))
+
+        layout.ids['containerlist'].add_widget(containerItem)
 
     # Заготовка для съемки контейнера
     def on_icon_right_press(self, _id):
@@ -130,6 +130,8 @@ class QRCodeScannerApp(MDApp):
         image_np = np.frombuffer(image._texture.pixels, 'uint8').reshape(h, w, 4)
         # Rotate the image by 180 degrees
         image_np = cv2.flip(image_np, -1)
+        # Flip the image horizontally
+        image_np = cv2.flip(image_np, 1)
         # Convert the numpy array back to an image
         image = Imagep.fromarray(np.uint8(image_np))
         texture = Texture.create(size=image.size)
@@ -170,11 +172,11 @@ class QRCodeScannerApp(MDApp):
         resistance = int(self.root.ids.resistance_input.text)
         controller.create_product(name, _type, capacity, voltage, resistance)
 
-    def show_image(self,paths):
+    def show_image(self,_id):
         # Set current image index
         self.image_index = 0
         # Store paths
-        self.image_paths = paths
+        self.image_paths = controller.get_containers_images(_id)
         image_popup = Popup(title='Фото контейнера', size_hint=(1, 1))
         # Create image widget
         self.image = AsyncImage(source=self.image_paths[self.image_index])
@@ -255,8 +257,9 @@ class QRCodeScannerApp(MDApp):
                 # Иначе, если не пустой пойманный массив, декодирует
                 last_decoded_object = decoded_objects[0]
                 text = last_decoded_object.data.decode('utf-8')
+                text = text.split("\\")
 
-                container_id = text[-1]
+                container_id = int(text[-1])
 
                 self.is_processing_frame = False
                 self.cam.play = False
@@ -352,8 +355,7 @@ class QRCodeScannerApp(MDApp):
         button_layout = GridLayout(cols=5, size_hint=(1, None), height=dp(48))
 
         folder_button = MDIconButton(icon='folder', theme_text_color='Custom')
-        self.image_paths = controller.get_containers_images(container_id)
-        folder_button.bind(on_press = lambda instance: self.show_image(self.image_paths))  # Add on_press callback
+        folder_button.bind(on_press = lambda instance: self.show_image(container_id))  # Add on_press callback
         camera_button = MDIconButton(icon='camera', theme_text_color='Custom')
         camera_button.bind(on_press = lambda instance: self.on_icon_right_press(int(container_id)))  # Add on_press callback
 
@@ -398,7 +400,7 @@ class QRCodeScannerApp(MDApp):
         if not (self.is_processing_frame):
             search_layout = BoxLayout(orientation='vertical')
             containers_tuple = controller.get_all_containers()
-
+            containers_tuple = sorted(containers_tuple, key=lambda x: int(x[0]))
             # Извлечение значений id из containers_tuple
             ids = [item[0] for item in containers_tuple]
 
@@ -413,6 +415,15 @@ class QRCodeScannerApp(MDApp):
 
             search_popup = Popup(title='Поиск', content=search_layout, size_hint=(0.6, 0.4))
             search_popup.open()
+
+    def create_container(self):
+        controller.create_container()
+        #containerlist = self.root.ids.containerlist
+        containers_tuple = controller.get_all_containers()
+        containers_tuple = sorted(containers_tuple, key=lambda x: int(x[0]))
+        container_id=containers_tuple[-1][0]
+        #containerlist.clear_widgets()
+        self.containerlist_builder(self.root,container_id)
 
     def on_spinner_select(self, instance, text):
         self.show_table_popup(text)
