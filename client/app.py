@@ -21,6 +21,7 @@ from pyzbar import pyzbar
 import numpy as np
 import tempfile
 import controller
+from PIL import Image as Imagep
 
 
 '''
@@ -79,6 +80,7 @@ class QRCodeScannerApp(MDApp):
 
     # Заготовка для съемки контейнера
     def on_icon_right_press(self, _id):
+        self.getting_frame = True
         #pass
         # Set the container ID for which the photo is being taken
         self.container_id = _id
@@ -114,14 +116,24 @@ class QRCodeScannerApp(MDApp):
         camera_popup.open()
 
     def foto_dismiss(self,camera_popup,camera):
+        self.getting_frame = False
         camera.play = False
         camera_popup.dismiss()
 
     def get_frame(self, camera, imn):
+        if not self.getting_frame:
+            return
         # Capture the image from the camera
         image = camera.export_as_image()
+        # Convert the image to a numpy array for use with cv2
+        w, h = image._texture.size
+        image_np = np.frombuffer(image._texture.pixels, 'uint8').reshape(h, w, 4)
+        # Rotate the image by 180 degrees
+        image_np = cv2.flip(image_np, -1)
+        # Convert the numpy array back to an image
+        image = Imagep.fromarray(np.uint8(image_np))
         texture = Texture.create(size=image.size)
-        texture.blit_buffer(image._texture.pixels, colorfmt='rgba')
+        texture.blit_buffer(image.tobytes(), colorfmt='rgba')
         imn.texture = texture
 
 
@@ -141,13 +153,7 @@ class QRCodeScannerApp(MDApp):
             controller.upload_image(self.container_id, image_data)
             camera.play = False
             # Close the camera popup
-            camera_popup.dismiss()
-
-            # Remove the camera instance
-            #Window.remove_widget(camera)
-
-            # Update the camera widget
-            #self.update_camera_widget()
+            self.foto_dismiss(camera_popup,camera)
 
     def update_camera_widget(self):
         # Find the camera widget that's currently displayed on the screen
@@ -243,7 +249,7 @@ class QRCodeScannerApp(MDApp):
 
             # Распознавание QR-кодов
             decoded_objects = pyzbar.decode(gray)
-            print(decoded_objects)
+            #print(decoded_objects)
 
             if len(decoded_objects) != 0:
                 # Иначе, если не пустой пойманный массив, декодирует
@@ -283,7 +289,7 @@ class QRCodeScannerApp(MDApp):
                     temp.append(i)
 
                 id_prod = self.get_prod_id(row[0], product_data)
-                print(container_id, id_prod)
+                #print(container_id, id_prod)
                 controller.increase_product_quantity(container_id=container_id, product_id=id_prod)
                 row[-1] += 1  # Increase the quantity by 1
                 self.table_layout.update_row(self.table_layout.row_data[id_prod - 1], row)
@@ -298,7 +304,7 @@ class QRCodeScannerApp(MDApp):
                     temp.append(i)
 
                 id_prod = self.get_prod_id(row[0], product_data)
-                print(container_id, id_prod)
+                #print(container_id, id_prod)
                 controller.decrease_product_quantity(container_id=container_id, product_id=id_prod)
                 row[-1] -= 1  # Increase the quantity by 1
                 self.table_layout.update_row(self.table_layout.row_data[id_prod - 1], row)
