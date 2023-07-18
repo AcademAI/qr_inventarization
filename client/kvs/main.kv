@@ -21,6 +21,13 @@ MDBoxLayout:
         title: "Приложение учета изделий"
         md_bg_color: .2,.2,.2,1
 
+        TextInput:
+            id: search_input
+            size_hint_x: None
+            width: 180
+            hint_text: "Поиск"
+            on_text_validate: app.search_containers(self.text)
+
     MDBottomNavigation:
 
         MDBottomNavigationItem:
