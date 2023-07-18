@@ -71,3 +71,7 @@ def create_product(name: str, _type: str, capacity: int, voltage: int, resistanc
     response = requests.post(url, json=data)
 
     return response.json()
+def create_container():
+    url = "http://127.0.0.1:8000/containers/create"
+    response = requests.post(url)
+    return response.json()
