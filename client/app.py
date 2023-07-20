@@ -2,17 +2,15 @@ import cv2
 from kivymd.app import MDApp
 from kivy.core.window import Window
 from kivymd.uix.datatables import MDDataTable
-from kivymd.uix.list import IRightBodyTouch, OneLineAvatarIconListItem, IconLeftWidget, IconRightWidget
-from kivymd.uix.boxlayout import MDBoxLayout
+from kivymd.uix.list import OneLineAvatarIconListItem, IconLeftWidget, IconRightWidget
 from kivymd.uix.button import MDIconButton
+from kivy.uix.textinput import TextInput
 from kivy.uix.boxlayout import BoxLayout
 from kivy.uix.gridlayout import GridLayout
 from kivy.uix.image import AsyncImage
 from kivy.uix.button import Button
-from kivy.uix.spinner import Spinner
 from kivy.uix.popup import Popup
 from kivy.graphics.texture import Texture
-from kivy.properties import StringProperty
 from kivy.lang import Builder
 from kivy.metrics import dp
 from kivy.clock import Clock
@@ -22,12 +20,6 @@ import numpy as np
 import tempfile
 import controller
 from PIL import Image as Imagep
-
-
-'''
-class ContainerListItem(IRightBodyTouch, MDBoxLayout):
-    adaptive_width = True
-'''
 
 
 class AndroidCamera(Camera):
@@ -65,7 +57,6 @@ class QRCodeScannerApp(MDApp):
     def containerlist_builder(self, layout, container_id):
         '''Вроде починили:)'''
 
-        #self.image_paths = controller.get_containers_images(container_id)
         containerItem = OneLineAvatarIconListItem(
             IconLeftWidget(icon="folder", on_press=lambda *args, _id=container_id: self.show_image(_id)),
             text=f"Контейнер № {container_id}", on_press=lambda *args, _id=container_id: self.show_table_popup(_id)
@@ -74,14 +65,12 @@ class QRCodeScannerApp(MDApp):
         icon_right = IconRightWidget(icon="camera",
                                         on_press=lambda *args, _id=container_id: self.on_icon_right_press(_id))
         containerItem.add_widget(icon_right)
-        # containerItem.bind(on_release=lambda *args, id=container_id: self.show_table_popup(id))
 
         layout.ids['containerlist'].add_widget(containerItem)
 
     # Заготовка для съемки контейнера
     def on_icon_right_press(self, _id):
         self.getting_frame = True
-        #pass
         # Set the container ID for which the photo is being taken
         self.container_id = _id
 
@@ -92,7 +81,6 @@ class QRCodeScannerApp(MDApp):
         camera = self.cam
         camera.play = True
         camera.resolution = (1280, 720)
-        #self.cam.play = True
         # Create a button to take the photo
         take_photo_button = Button(text='Сфотографировать', size_hint=(0.5, None), height=dp(50))
         take_photo_button.bind(on_press=lambda *args: Clock.schedule_once( lambda inst: self.take_photo(camera, camera_popup), 0.5))
@@ -100,7 +88,6 @@ class QRCodeScannerApp(MDApp):
         # Create a layout to hold the camera and the button
         layout = BoxLayout(orientation='vertical')
 
-        #layout.add_widget(camera)
         layout.add_widget(take_photo_button)
         close_button = MDIconButton(icon='close')
         close_button.bind(on_release=lambda instance: self.foto_dismiss(camera_popup,camera))
@@ -251,7 +238,6 @@ class QRCodeScannerApp(MDApp):
 
             # Распознавание QR-кодов
             decoded_objects = pyzbar.decode(gray)
-            #print(decoded_objects)
 
             if len(decoded_objects) != 0:
                 # Иначе, если не пустой пойманный массив, декодирует
@@ -284,7 +270,7 @@ class QRCodeScannerApp(MDApp):
 
     def increase_selected_quantity(self, row_data, container_id, product_data):
         global check_list
-
+        quantity = int(self.quantity_input.text)
         for row in row_data:
             if self.in_list(row):
                 temp = []
@@ -292,14 +278,13 @@ class QRCodeScannerApp(MDApp):
                     temp.append(i)
 
                 id_prod = self.get_prod_id(row[0], product_data)
-                #print(container_id, id_prod)
-                controller.increase_product_quantity(container_id=container_id, product_id=id_prod)
-                row[-1] += 1  # Increase the quantity by 1
+                controller.increase_product_quantity(container_id=container_id, product_id=id_prod, quantity=quantity)
+                row[-1] += quantity  # Increase the quantity by quantity
                 self.table_layout.update_row(self.table_layout.row_data[id_prod - 1], row)
 
     def decrease_selected_quantity(self, row_data, container_id, product_data):
         global check_list
-
+        quantity = int(self.quantity_input.text)
         for row in row_data:
             if self.in_list(row):
                 temp = []
@@ -307,9 +292,8 @@ class QRCodeScannerApp(MDApp):
                     temp.append(i)
 
                 id_prod = self.get_prod_id(row[0], product_data)
-                #print(container_id, id_prod)
-                controller.decrease_product_quantity(container_id=container_id, product_id=id_prod)
-                row[-1] -= 1  # Increase the quantity by 1
+                controller.decrease_product_quantity(container_id=container_id, product_id=id_prod, quantity=quantity)
+                row[-1] -= quantity  # Increase the quantity by quantity
                 self.table_layout.update_row(self.table_layout.row_data[id_prod - 1], row)
 
     def show_table_popup(self, text):
@@ -342,9 +326,9 @@ class QRCodeScannerApp(MDApp):
             sorted_order="ASC",
         )
         self.table_layout.bind(on_check_press=self.on_check_press)
-        close_button = Button(text='Закрыть', size_hint=(1, 0.2))
+        close_button = MDIconButton(icon='close', size_hint=(None, None), size=(dp(48), dp(48)))
         close_button.bind(on_press=self.close_popup)
-
+        self.quantity_input = TextInput(text='1', size_hint=(None, None),size=(dp(48), dp(48)))
         increase_button = Button(text='Увеличить', size_hint=(1, 0.2))
         increase_button.bind(
             on_press=lambda instance: self.increase_selected_quantity(table_data, container_id, product_data))
@@ -352,7 +336,7 @@ class QRCodeScannerApp(MDApp):
         decrease_button.bind(
             on_press=lambda instance: self.decrease_selected_quantity(table_data, container_id, product_data))
 
-        button_layout = GridLayout(cols=5, size_hint=(1, None), height=dp(48))
+        button_layout = GridLayout(cols=6, size_hint=(1, None), height=dp(48))
 
         folder_button = MDIconButton(icon='folder', theme_text_color='Custom')
         folder_button.bind(on_press = lambda instance: self.show_image(container_id))  # Add on_press callback
@@ -363,11 +347,10 @@ class QRCodeScannerApp(MDApp):
         button_layout.add_widget(camera_button)
         button_layout.add_widget(close_button)
         button_layout.add_widget(increase_button)
+        button_layout.add_widget(self.quantity_input)
         button_layout.add_widget(decrease_button)
 
         layout = BoxLayout(orientation='vertical')
-        close_button11 = MDIconButton(icon='close', size_hint=(None, None), size=(dp(48), dp(48)))
-
         layout.add_widget(self.table_layout)
         layout.add_widget(button_layout)
         table_popup = Popup(title=f"Содержимое контейнера № {container_id}", content=layout, size_hint=(1, 1))
@@ -390,40 +373,15 @@ class QRCodeScannerApp(MDApp):
         check_list = []
         instance.parent.parent.parent.parent.parent.dismiss()
 
-    '''
-    def on_popup_dismiss(self, instance):
-        Clock.schedule_once(self.schedule_next_frame, 0)
-
-    '''
 
     def open_search_window(self):
         self.search_containers(self.root.ids.search_input.text)
-        """if not (self.is_processing_frame):
-            search_layout = BoxLayout(orientation='vertical')
-            containers_tuple = controller.get_all_containers()
-            containers_tuple = sorted(containers_tuple, key=lambda x: int(x[0]))
-            # Извлечение значений id из containers_tuple
-            ids = [item[0] for item in containers_tuple]
-
-            spinner = Spinner(
-                text='Выберите контейнер из списка',
-                values=ids,
-                size_hint=(None, None),
-                size=(200, 50)
-            )
-            spinner.bind(text=self.on_spinner_select)
-            search_layout.add_widget(spinner)
-
-            search_popup = Popup(title='Поиск', content=search_layout, size_hint=(0.6, 0.4))
-            search_popup.open()"""
 
     def create_container(self):
         controller.create_container()
-        #containerlist = self.root.ids.containerlist
         containers_tuple = controller.get_all_containers()
         containers_tuple = sorted(containers_tuple, key=lambda x: int(x[0]))
         container_id=containers_tuple[-1][0]
-        #containerlist.clear_widgets()
         self.containerlist_builder(self.root,container_id)
 
     def on_spinner_select(self, instance, text):
@@ -463,11 +421,6 @@ class QRCodeScannerApp(MDApp):
                         self.containerlist_builder(self.root, _id)
                         filtered.append((_id, data))
                         break
-
-
-
-
-
 
 
 if __name__ == '__main__':
