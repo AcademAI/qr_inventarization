@@ -37,14 +37,14 @@ version = 0.1
 
 # (list) Application requirements
 # comma separated e.g. requirements = sqlite3,kivy
-requirements = python3,sdl2_ttf, pil,kivy,kivymd,opencv,pyzbar,android, numpy
+requirements = python3,sdl2_ttf, pil==5.4.1,kivy,kivymd==1.0.2,opencv,pyzbar,android, numpy
 
 # (str) Custom source folders for requirements
 # Sets custom source for any requirements with recipes
 # requirements.source.kivy = ../../kivy
 
 # (str) Presplash of the application
-presplash.filename = pacman.gif
+#presplash.filename = pacman.gif
 
 # (str) Icon of the application
 icon.filename = icons8-qr-48.png
