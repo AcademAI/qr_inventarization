@@ -127,8 +127,8 @@ def create_product(product: dict):
     return {"message": "Добавлен новый тип изделия во все контейнеры"}
 
 
-@app.put("/products/{container_id}/{product_id}/increase")
-def increase_product_quantity(container_id: int, product_id: int):
+@app.put("/products/{container_id}/{product_id}/increase/{quantity}")
+def increase_product_quantity(container_id: int, product_id: int, quantity: int):
     container_id = str(container_id)
     current_container = os.path.join(containers_folder, container_id)
     file_path = os.path.join(current_container, "products.json")
@@ -143,8 +143,8 @@ def increase_product_quantity(container_id: int, product_id: int):
     # Поиск продукта по id
     for product_data, product_type in zip(data, product_types):
         if product_data["id"] == product_id:
-            product_data["quantity"] += 1
-            product_type["quantity"] += 1
+            product_data["quantity"] += quantity
+            product_type["quantity"] += quantity
             break
 
     utils.data_dumper(file_path, data)
@@ -153,8 +153,8 @@ def increase_product_quantity(container_id: int, product_id: int):
     return {"message": "Количество продукта увеличено"}
 
 
-@app.put("/products/{container_id}/{product_id}/decrease")
-def decrease_product_quantity(container_id: int, product_id: int):
+@app.put("/products/{container_id}/{product_id}/decrease/{quantity}")
+def decrease_product_quantity(container_id: int, product_id: int, quantity: int):
     container_id = str(container_id)
     current_container = os.path.join(containers_folder, container_id)
     file_path = os.path.join(current_container, "products.json")
@@ -169,8 +169,8 @@ def decrease_product_quantity(container_id: int, product_id: int):
     # Поиск продукта по id
     for product_data, product_type in zip(data, product_types):
         if product_data["id"] == product_id:
-            product_data["quantity"] -= 1
-            product_type["quantity"] -= 1
+            product_data["quantity"] -= quantity
+            product_type["quantity"] -= quantity
             break
 
     utils.data_dumper(file_path, data)
