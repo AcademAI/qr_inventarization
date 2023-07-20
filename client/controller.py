@@ -5,6 +5,7 @@ ip_conf = "127.0.0.1"
 #"172.16.25.124"
 def get_all_containers():
     url = f"http://{ip_conf}:8000/containers/"
+    print(url)
     response = requests.get(url)
     data = response.json()
 
@@ -22,16 +23,16 @@ def get_container(container_id):
     return data
 
 
-def increase_product_quantity(container_id: int, product_id: int):
-    url = f"http://{ip_conf}:8000/products/{container_id}/{product_id}/increase"
+def increase_product_quantity(container_id: int, product_id: int, quantity: int):
+    url = f"http://{ip_conf}:8000/products/{container_id}/{product_id}/increase/{quantity}"
     response = requests.put(url)
     data = response.json()
 
     return data
 
 
-def decrease_product_quantity(container_id: int, product_id: int):
-    url = f"http://{ip_conf}:8000/products/{container_id}/{product_id}/decrease"
+def decrease_product_quantity(container_id: int, product_id: int, quantity: int):
+    url = f"http://{ip_conf}:8000/products/{container_id}/{product_id}/decrease/{quantity}"
     response = requests.put(url)
     data = response.json()
 
