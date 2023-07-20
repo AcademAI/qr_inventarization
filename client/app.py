@@ -330,7 +330,7 @@ class QRCodeScannerApp(MDApp):
             pos_hint={'center_x': 0.5, 'center_y': 0},
             size_hint=(1, 0.8),
             use_pagination=True,
-            rows_num=6,
+            rows_num=10,
             check=True,  # Enable row selection with checkboxes
             column_data=[
                 ("Название", dp(30)),
