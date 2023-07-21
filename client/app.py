@@ -164,6 +164,8 @@ class QRCodeScannerApp(MDApp):
         self.image_index = 0
         # Store paths
         self.image_paths = controller.get_containers_images(_id)
+        if len(self.image_paths)==0:
+            return
         image_popup = Popup(title='Фото контейнера', size_hint=(1, 1))
         # Create image widget
         self.image = AsyncImage(source=self.image_paths[self.image_index])
@@ -174,7 +176,7 @@ class QRCodeScannerApp(MDApp):
         right_button = Button(text='Вперед', on_press=self.show_next, size_hint=(0.5, None), height=dp(50))
 
         # Add a button to delete the image
-        delete_button = Button(text='Удалить', on_press = self.delete_image, size_hint=(1, None), height=dp(50))
+        delete_button = Button(text='Удалить', on_press=lambda instance: self.delete_image(image_popup), size_hint=(1, None), height=dp(50))
 
         # Add to layout
         layout = BoxLayout(orientation='vertical')
@@ -190,22 +192,23 @@ class QRCodeScannerApp(MDApp):
         image_popup.content = layout
         image_popup.open()
 
-    def delete_image(self, *args):
+    def delete_image(self,image_popup, *args):
         # Delete the current image
         if self.image_paths and len(self.image_paths) > 0:
             img_path = self.image_paths[self.image_index]
             param = img_path.split('/')
             controller.delete_image(int(param[-2]),param[-1])
             self.image.source = ''
-
-            # Remove the deleted image path from the list
-            self.image_paths.remove(img_path)
-            if len(self.image_paths) > 0:
+            if len(self.image_paths) > 1:
+                # Remove the deleted image path from the list
+                self.image_paths.remove(img_path)
                 # Show the next image if available
                 self.show_next()
             else:
                 # Close the popup if there are no more images to show
-                self.close_popup()
+                image_popup.dismiss()
+                # Remove the deleted image path from the list
+                self.image_paths.remove(img_path)
 
     def show_prev(self, *args):
         self.image_index -= 1
