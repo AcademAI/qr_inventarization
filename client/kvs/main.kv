@@ -18,16 +18,53 @@ MDBoxLayout:
     pos_hint: {'center_x': 0.5, 'center_y': 0.5}
 
     MDTopAppBar:
+        id: top_bar
         title: "Приложение учета изделий"
         md_bg_color: .2,.2,.2,1
-        right_action_items: [["magnify", lambda x: app.open_search_window()], ["plus", lambda x: app.create_container()]]
+        GridLayout:
+            size_hint: None, None
+            size: 500, 67
+            cols: 4
+            TextInput:
+                id: search_input
+                size_hint_x: None
+                size_hint_y: None
+                width: 180
+                height: 48
+                hint_text: "Поиск"
+                on_text_validate: app.search_containers(self.text)
+                opacity: 0
+                disabled: True
 
-        TextInput:
-            id: search_input
-            size_hint_x: None
-            width: 180
-            hint_text: "Поиск"
-            on_text_validate: app.search_containers(self.text)
+            MDIconButton:
+                id: search_button
+                icon: "magnify"
+                #size_hint: 1, 0.2
+                size_hint: None, None
+                size: 48, 48
+                pos_hint: {'center_x': 0.5}
+                on_press: app.open_search_window()
+                opacity: 0
+                disabled: True
+
+            MDIconButton:
+                id: plus_button
+                icon: "plus"
+                #size_hint: 1, 0.2
+                size_hint: None, None
+                size: 48, 48
+                pos_hint: {'center_x': 0.5 }
+                on_press: app.create_container()
+                opacity: 0
+                disabled: True
+            Button:
+                id: scan_button
+                size_hint: 1, 0.2
+                text: 'Сканировать QR'
+                size_hint: None, None
+                size: 200, 50
+                pos_hint: {'center_x': 0.5}
+                on_press: app.start_scanning()
 
     MDBottomNavigation:
 
@@ -60,14 +97,7 @@ MDBoxLayout:
                         canvas.after:
                             PopMatrix
 
-                Button:
-                    id: scan_button
-                    size_hint: 1, 0.2
-                    text: 'Сканировать QR'
-                    size_hint: None, None
-                    size: 200, 50
-                    pos_hint: {'center_x': 0.5}
-                    on_press: app.start_scanning()
+
 
         MDBottomNavigationItem:
             id:container_list_screen
