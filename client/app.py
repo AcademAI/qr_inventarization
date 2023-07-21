@@ -45,6 +45,10 @@ class QRCodeScannerApp(MDApp):
 
         screen = layout.ids.screen_with_camera
         screen.bind(on_pre_leave=self.on_screen_leave)
+        screen.bind(on_pre_enter=self.on_screen_enter)
+        screen_list = layout.ids.container_list_screen
+        screen_list.bind(on_pre_leave=self.on_screen_list_leave)
+        screen_list.bind(on_pre_enter =self.on_screen_list_enter)
         containers_tuple = controller.get_all_containers()
         containers_tuple = sorted(containers_tuple, key=lambda x: int(x[0]))
 
@@ -53,6 +57,23 @@ class QRCodeScannerApp(MDApp):
         self.products = {}
 
         return layout
+
+    def on_screen_list_leave(self, *args):
+        self.root.ids.search_input.disabled = True
+        self.root.ids.search_input.opacity = 0
+        self.root.ids.search_button.disabled = True
+        self.root.ids.search_button.opacity = 0
+        self.root.ids.plus_button.disabled = True
+        self.root.ids.plus_button.opacity = 0
+
+    def on_screen_list_enter(self, *args):
+        self.root.ids.search_input.disabled = False
+        self.root.ids.search_input.opacity = 1
+        self.root.ids.search_button.disabled = False
+        self.root.ids.search_button.opacity = 1
+        self.root.ids.plus_button.disabled = False
+        self.root.ids.plus_button.opacity = 1
+
 
     def containerlist_builder(self, layout, container_id):
         '''Вроде починили:)'''
@@ -400,7 +421,15 @@ class QRCodeScannerApp(MDApp):
         self.is_processing_frame = False
 
     def on_screen_leave(self, *args):
+        self.root.ids.scan_button.disabled = True
+        self.root.ids.scan_button.opacity = 0
         self.on_stop()
+    def on_screen_enter(self, *args):
+        self.root.ids.scan_button.disabled = False
+        self.root.ids.scan_button.opacity = 1
+
+
+
 
     def search_containers(self, search_text):
         if search_text=="":
